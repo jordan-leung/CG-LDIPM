@@ -47,12 +47,19 @@ fprintf('------ Running with regular scheme ------ \n')
 
 % Diagonal noPrecond
 fprintf('------ Running with CGLDIPM (no precond) ------ \n')
-[x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,wsRes,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
+[x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,CGerror,wsRes] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
 
 % Diagonal precond
 fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
-[x2,~,~,vStar2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,wsRes2,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1,printFlag);
+[x2,~,~,vStar2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,CGerror2,wsRes2] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1,printFlag);
 
+% % Diagonal noPrecond
+% fprintf('------ Running with CGLDIPM (no precond) ------ \n')
+% [x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,CGerror,wsRes] = logInteriorPoint_conjgrad_pproj(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
+% 
+% % Diagonal precond
+% fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
+% [x2,~,~,vStar2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,CGerror2,wsRes2] = logInteriorPoint_conjgrad_pproj(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1,printFlag);
 
 
 %% Plotting
@@ -74,21 +81,21 @@ figSize = [0 0 0.2 0.2];
 set(gcf,'units','normalized','position',figSize)
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('\# of CG Iterations','interpreter','latex','fontsize',15)
-% legend([h1 h2 h3 h4],'No cond, 1st','No cond, 2nd','Diag 1st','Diag 2nd','interpreter','latex','fontsize',12,'location','best')
+legend([h1 h2 h3 h4],'No cond, 1st','No cond, 2nd','Diag 1st','Diag 2nd','interpreter','latex','fontsize',12,'location','best')
 ylim([0 20])
 
 figure
 markSize = 15;
 hold on; grid on; box on
-h5 = plot(CGIters(:,1)+CGIters(:,2),'linewidth',2,'color',h1.Color);
-h6 = plot(CGIters2(:,1)+CGIters2(:,2),'linewidth',2,'color',h3.Color);
+h5 = plot(CGIters(:,1)+CGIters(:,2),'linewidth',2);
+h6 = plot(CGIters2(:,1)+CGIters2(:,2),'linewidth',2);
 plot(CGIters(:,1)+CGIters(:,2),'.','markersize',markSize,'color',h1.Color);
 plot(CGIters2(:,1)+CGIters2(:,2),'.','markersize',markSize,'color',h3.Color);
 figSize = [0 0 0.2 0.2];
 set(gcf,'units','normalized','position',figSize)
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('Total CG Iterations','interpreter','latex','fontsize',15)
-% legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
+legend([h5 h3],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
 ylim([0 Inf])
 
 
@@ -106,23 +113,23 @@ ylabel('Warm-start residual','interpreter','latex','fontsize',15)
 % legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
 
 
-% % Error plot
-% figure
-% markSize = 15;
-% h1 = semilogy(CGerror(:,1),'linewidth',2);
-% hold on; grid on; box on
-% h2 = semilogy(CGerror(:,2),'Color',h1.Color,'linestyle','-.','linewidth',2);
-% h3 = semilogy(CGerror2(:,1),'linewidth',2);
-% h4 = semilogy(CGerror2(:,2),'Color',h3.Color,'linestyle','--','linewidth',2);
-% semilogy(CGerror(:,1),'.','markersize',markSize,'color',h1.Color);
-% semilogy(CGerror(:,2),'.','markersize',markSize,'color',h2.Color);
-% semilogy(CGerror2(:,1),'.','markersize',markSize,'color',h3.Color);
-% semilogy(CGerror2(:,2),'.','markersize',markSize,'color',h4.Color);
-% semilogy = [0 0 0.2 0.2];
-% set(gcf,'units','normalized','position',figSize)
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Error','interpreter','latex','fontsize',15)
-% ylim([0 20])
+% Warm-start comparison plot
+figure
+markSize = 15;
+h1 = semilogy(CGerror(:,1),'linewidth',2);
+hold on; grid on; box on
+h2 = semilogy(CGerror(:,2),'Color',h1.Color,'linestyle','-.','linewidth',2);
+h3 = semilogy(CGerror2(:,1),'linewidth',2);
+h4 = semilogy(CGerror2(:,2),'Color',h3.Color,'linestyle','--','linewidth',2);
+semilogy(CGerror(:,1),'.','markersize',markSize,'color',h1.Color);
+semilogy(CGerror(:,2),'.','markersize',markSize,'color',h2.Color);
+semilogy(CGerror2(:,1),'.','markersize',markSize,'color',h3.Color);
+semilogy(CGerror2(:,2),'.','markersize',markSize,'color',h4.Color);
+semilogy = [0 0 0.2 0.2];
+set(gcf,'units','normalized','position',figSize)
+xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+ylabel('CG Error','interpreter','latex','fontsize',15)
+ylim([0 20])
 
 
 % figure
