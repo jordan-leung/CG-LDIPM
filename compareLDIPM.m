@@ -4,7 +4,7 @@ close all
 
 % Load data
 saveFlag = 0;
-caseFlag = 1;
+caseFlag = 3;
 switch caseFlag
     case 1 % Active constraints MPC example
         load('QPData'); 
@@ -18,7 +18,14 @@ switch caseFlag
         c = f_QP;
         A = A_QP;
         b = b_QP;
-    case 3 % Scalable QP example
+    case 3 % Case 1 but with only the input constraints
+        load('QPData');
+        H = H_QP;
+        c = f_QP;
+        xmin = -ones(size(H_QP,1),1);
+        xmax = ones(size(H_QP,1),1);
+        [A,b] = minmaxMatrices(xmin,xmax);
+    case 4 % Scalable QP example
         N = 10;
         H = diag(linspace(0.01,1,N));
         %         H = eye(N);
@@ -53,7 +60,9 @@ fprintf('------ Running with CGLDIPM (no precond) ------ \n')
 fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
 [x2,~,~,vStar2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,wsRes2,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1,printFlag);
 
-
+if caseFlag == 3
+    [x3,iterCount3,xError3,execTime3] = projGradSolver_rt(H,c,zeros(size(H,1)),xmin,xmax,1000,x_QP,1e-6);
+end
 
 %% Plotting
 close all
