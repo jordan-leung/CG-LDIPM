@@ -49,6 +49,28 @@ CGPreCondFlag = 0;
 printFlag = 1;
 v0 = zeros(size(A,1),1);
 
+% % First, solve for the unconstrained solution and project onto solution
+% xStar_unc = -H\c;
+% xProj = xStar_unc;
+% n = size(H,1);
+% m = size(A,1);
+% for i = 1:n
+%    if xProj(i) >  xmax(i)
+%        xProj(i) = xmax(i);
+%    elseif xProj(i) < xmin(i)
+%        xProj(i) = xmin(i);
+%    end
+% end
+% 
+% % Calculate slack
+% s_init = A*xProj + b;
+% for i = 1:m
+%     if s_init(i) < 1e-6
+%         s_init(i) = 1e-6;
+%     end
+% end
+% v0 = -log(s_init);
+
 fprintf('------ Running with regular scheme ------ \n')
 [xReg,lambdaReg,sReg,vReg,~,~,numIterReg,~,~,execTimeReg] = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
 

@@ -7,7 +7,7 @@ addpath(pathVar);
 
 % Load data
 saveFlag = 0;
-caseFlag = 1;
+caseFlag = 3;
 switch caseFlag
     case 1
         load('QPData');
@@ -212,41 +212,42 @@ end
 %     end
 % end
 
-% % PG
-% if caseFlag == 3
-%     fprintf('----------- Running gradient ---------- \n')
-%     % Proj grad
-%     brokeFlag = 0;
-%     for iOuter = 1:numSample
-%         % Get optimal solution
-%         xStar = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
-%         xTol = xTolVec(iOuter);
-%         
-%         % Run and average
-%         execTimeSum = 0;
-%         for j = 1:NumAverage
-%             if useMexFlag
-%                 [xx,numIter,xError,execTime_i] = projGradSolver_rt_mex(H,c,zeros(size(H,1),1),xmin,xmax,50000,xStar,xTol);
-%             else
-%                 [xx,numIter,xError,execTime_i] = projGradSolver_rt(H,c,zeros(size(H,1),1),xmin,xmax,50000,xStar,xTol);
-%             end
-%             execTimeSum = execTimeSum + execTime_i;
-%             if xError > xTol
-%                 brokeFlag = 1;
-%                 break
-%             end
-%         end
-%         if brokeFlag == 1
-%             fprintf('Error unachievable for Proj Grad at xTol: %0.2e \n',xTol)
-%             fprintf('Produced Error: %0.2e \n',xError(end))
-%             numSample = iOuter-1;
-%             break
-%         else
-%             execTime_pg(iOuter) = execTimeSum/NumAverage;
-%             numIters_pg(iOuter) = numIter;
-%         end
-%     end
-% end
+
+% PG
+if caseFlag == 3
+    fprintf('----------- Running gradient ---------- \n')
+    % Proj grad
+    brokeFlag = 0;
+    for iOuter = 1:numSample
+        % Get optimal solution
+        xStar = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
+        xTol = xTolVec(iOuter);
+        
+        % Run and average
+        execTimeSum = 0;
+        for j = 1:NumAverage
+            if useMexFlag
+                [xx,numIter,xError,execTime_i] = projGradSolver_rt_mex(H,c,zeros(size(H,1),1),xmin,xmax,50000,xStar,xTol);
+            else
+                [xx,numIter,xError,execTime_i] = projGradSolver_rt(H,c,zeros(size(H,1),1),xmin,xmax,50000,xStar,xTol);
+            end
+            execTimeSum = execTimeSum + execTime_i;
+            if xError > xTol
+                brokeFlag = 1;
+                break
+            end
+        end
+        if brokeFlag == 1
+            fprintf('Error unachievable for Proj Grad at xTol: %0.2e \n',xTol)
+            fprintf('Produced Error: %0.2e \n',xError(end))
+            numSample = iOuter-1;
+            break
+        else
+            execTime_pg(iOuter) = execTimeSum/NumAverage;
+            numIters_pg(iOuter) = numIter;
+        end
+    end
+end
 
 % Cut
 xTolVec = xTolVec(1:numSample);
@@ -283,7 +284,7 @@ figSize = [0 0 0.3 0.3];
 set(gcf,'units','normalized','position',figSize)
 xlabel('$\| x - x^* \|$','interpreter','latex','fontsize',15)
 ylabel('Exec Time (s)','interpreter','latex','fontsize',15)
-legend([h1 h2 h3 h4],'Direct','CG','CG 7 Iter','interpreter','latex','fontsize',12,'location','best')
+legend([h1 h2 h3 h4],'Direct','CG','CG 7 Iter','Grad','interpreter','latex','fontsize',12,'location','best')
 % filename = [pwd '/Figures/xErrorPlot_Case',num2str(caseFlag)];
 % saveas(gcf,filename,'epsc')
 
