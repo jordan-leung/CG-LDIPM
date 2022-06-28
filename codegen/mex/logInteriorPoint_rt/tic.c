@@ -13,7 +13,7 @@
 #include "emlrt.h"
 
 /* Variable Definitions */
-static emlrtRSInfo pb_emlrtRSI = { 34, /* lineNo */
+static emlrtRSInfo jb_emlrtRSI = { 34, /* lineNo */
   "tic",                               /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/timefun/tic.m"/* pathName */
 };
@@ -29,24 +29,24 @@ void tic(const emlrtStack *sp)
   int32_T status;
   st.prev = sp;
   st.tls = sp->tls;
-  st.site = &pb_emlrtRSI;
+  st.site = &jb_emlrtRSI;
   b_st.prev = &st;
   b_st.tls = st.tls;
   c_st.prev = &b_st;
   c_st.tls = b_st.tls;
   d_st.prev = &c_st;
   d_st.tls = c_st.tls;
-  b_st.site = &qb_emlrtRSI;
-  c_st.site = &rb_emlrtRSI;
+  b_st.site = &kb_emlrtRSI;
+  c_st.site = &lb_emlrtRSI;
   status = emlrtClockGettimeMonotonic(&t);
-  d_st.site = &sb_emlrtRSI;
+  d_st.site = &mb_emlrtRSI;
   if (status != 0) {
-    emlrtErrorWithMessageIdR2018a(&d_st, &b_emlrtRTEI,
+    emlrtErrorWithMessageIdR2018a(&d_st, &c_emlrtRTEI,
       "Coder:toolbox:POSIXCallFailed", "Coder:toolbox:POSIXCallFailed", 5, 4, 26,
       "emlrtClockGettimeMonotonic", 12, status);
   }
 
-  st.site = &pb_emlrtRSI;
+  st.site = &jb_emlrtRSI;
   timeKeeper(&st, t);
 }
 

@@ -14,11 +14,11 @@ cxx = g++
 linker = /usr/bin/gcc
 linkerxx = g++
 
-cflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DMODEL=logInteriorPoint_conjgrad_rt_mex -c 
+cflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_conjgrad_rt_mex -c 
 
-cxxflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -std=c++11 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c++11 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DMODEL=logInteriorPoint_conjgrad_rt_mex -c 
+cxxflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -std=c++11 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c++11 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_conjgrad_rt_mex -c 
 
-ldflags =  -pthread -Wl,--no-undefined -Wl,-rpath-link,$matlabdir/bin/glnxa64 -shared  -L"$matlabdir/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++  -o logInteriorPoint_conjgrad_rt_mex.mexa64 -L"$matlabdir/bin/glnxa64" -lmwblas -lemlrt -lcovrt -lut -lmwmathutil  -Wl,--version-script,logInteriorPoint_conjgrad_rt_mex.map
+ldflags =  -pthread -Wl,--no-undefined -Wl,-rpath-link,$matlabdir/bin/glnxa64 -shared  -L"$matlabdir/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++  -o logInteriorPoint_conjgrad_rt_mex.mexa64 -L"$matlabdir/bin/glnxa64" -lmwlapack -lmwblas -lemlrt -lcovrt -lut -lmwmathutil  -Wl,--version-script,logInteriorPoint_conjgrad_rt_mex.map
 
 # Build Rules
 rule cc
@@ -40,8 +40,8 @@ build $builddir/logInteriorPoint_conjgrad_rt_initialize.o : cc $root/logInterior
 build $builddir/logInteriorPoint_conjgrad_rt_terminate.o : cc $root/logInteriorPoint_conjgrad_rt_terminate.c
 build $builddir/logInteriorPoint_conjgrad_rt.o : cc $root/logInteriorPoint_conjgrad_rt.c
 build $builddir/inv.o : cc $root/inv.c
-build $builddir/eml_int_forloop_overflow_check.o : cc $root/eml_int_forloop_overflow_check.c
 build $builddir/warning.o : cc $root/warning.c
+build $builddir/mtimes.o : cc $root/mtimes.c
 build $builddir/tic.o : cc $root/tic.c
 build $builddir/timeKeeper.o : cc $root/timeKeeper.c
 build $builddir/find.o : cc $root/find.c
@@ -56,4 +56,4 @@ build $builddir/_coder_logInteriorPoint_conjgrad_rt_info.o : cc $root/interface/
 build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
 
 # Link
-build $root/logInteriorPoint_conjgrad_rt_mex.mexa64 : link $builddir/logInteriorPoint_conjgrad_rt_data.o $builddir/rt_nonfinite.o $builddir/logInteriorPoint_conjgrad_rt_initialize.o $builddir/logInteriorPoint_conjgrad_rt_terminate.o $builddir/logInteriorPoint_conjgrad_rt.o $builddir/inv.o $builddir/eml_int_forloop_overflow_check.o $builddir/warning.o $builddir/tic.o $builddir/timeKeeper.o $builddir/find.o $builddir/indexShapeCheck.o $builddir/norm.o $builddir/toc.o $builddir/_coder_logInteriorPoint_conjgrad_rt_api.o $builddir/_coder_logInteriorPoint_conjgrad_rt_mex.o $builddir/logInteriorPoint_conjgrad_rt_emxutil.o $builddir/logInteriorPoint_conjgrad_rt_mexutil.o $builddir/_coder_logInteriorPoint_conjgrad_rt_info.o $builddir/c_mexapi_version.o 
+build $root/logInteriorPoint_conjgrad_rt_mex.mexa64 : link $builddir/logInteriorPoint_conjgrad_rt_data.o $builddir/rt_nonfinite.o $builddir/logInteriorPoint_conjgrad_rt_initialize.o $builddir/logInteriorPoint_conjgrad_rt_terminate.o $builddir/logInteriorPoint_conjgrad_rt.o $builddir/inv.o $builddir/warning.o $builddir/mtimes.o $builddir/tic.o $builddir/timeKeeper.o $builddir/find.o $builddir/indexShapeCheck.o $builddir/norm.o $builddir/toc.o $builddir/_coder_logInteriorPoint_conjgrad_rt_api.o $builddir/_coder_logInteriorPoint_conjgrad_rt_mex.o $builddir/logInteriorPoint_conjgrad_rt_emxutil.o $builddir/logInteriorPoint_conjgrad_rt_mexutil.o $builddir/_coder_logInteriorPoint_conjgrad_rt_info.o $builddir/c_mexapi_version.o 

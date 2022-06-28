@@ -14,12 +14,12 @@
 /* Variable Definitions */
 static emlrtTimespec savedTime;
 static boolean_T savedTime_not_empty;
-static emlrtRSInfo tb_emlrtRSI = { 13, /* lineNo */
+static emlrtRSInfo nb_emlrtRSI = { 13, /* lineNo */
   "timeKeeper",                        /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/shared/coder/coder/lib/+coder/+internal/+time/+impl/timeKeeper.m"/* pathName */
 };
 
-static emlrtRTEInfo d_emlrtRTEI = { 11,/* lineNo */
+static emlrtRTEInfo e_emlrtRTEI = { 11,/* lineNo */
   9,                                   /* colNo */
   "timeKeeper",                        /* fName */
   "/home/jordanleung/MATLAB2020b/toolbox/shared/coder/coder/lib/+coder/+internal/+time/+impl/timeKeeper.m"/* pName */
@@ -30,7 +30,7 @@ void b_timeKeeper(const emlrtStack *sp, real_T *outTime_tv_sec, real_T
                   *outTime_tv_nsec)
 {
   if (!savedTime_not_empty) {
-    emlrtErrorWithMessageIdR2018a(sp, &d_emlrtRTEI,
+    emlrtErrorWithMessageIdR2018a(sp, &e_emlrtRTEI,
       "MATLAB:toc:callTicFirstNoInputs", "MATLAB:toc:callTicFirstNoInputs", 0);
   }
 
@@ -59,13 +59,13 @@ void timeKeeper(const emlrtStack *sp, const emlrtTimespec newTime)
   d_st.prev = &c_st;
   d_st.tls = c_st.tls;
   if (!savedTime_not_empty) {
-    st.site = &tb_emlrtRSI;
-    b_st.site = &qb_emlrtRSI;
-    c_st.site = &rb_emlrtRSI;
+    st.site = &nb_emlrtRSI;
+    b_st.site = &kb_emlrtRSI;
+    c_st.site = &lb_emlrtRSI;
     status = emlrtClockGettimeMonotonic(&savedTime);
-    d_st.site = &sb_emlrtRSI;
+    d_st.site = &mb_emlrtRSI;
     if (status != 0) {
-      emlrtErrorWithMessageIdR2018a(&d_st, &b_emlrtRTEI,
+      emlrtErrorWithMessageIdR2018a(&d_st, &c_emlrtRTEI,
         "Coder:toolbox:POSIXCallFailed", "Coder:toolbox:POSIXCallFailed", 5, 4,
         26, "emlrtClockGettimeMonotonic", 12, status);
     }

@@ -1,0 +1,174 @@
+clc
+clear all
+close all
+addpath('/Users/jordan/Google Drive/SCHOOL/PhD/MATLAB/OptimizationFunctions')
+pathVar = pathdef;
+addpath(pathVar);
+
+% Try case where H is block diagonal and A is structured. 
+% Then, M = I D*A*invH*A'*D are all highly structured and sparse. Matrix
+% products with M can then be computed using sparse matrix-vector products.
+
+% Load data - mainly for compiling code... Will regenerate H, c, b in the
+% main for loop
+
+% Static variables
+N = 120;
+condTarget = 1e3;
+ratio = 1;
+m = N/ratio;
+A = zeros(m,N);
+for i = 1:m
+    A(i,1+(i-1)*(N/m):i*(N/m)) = ones(1,N/m);
+end
+b_low = -1;
+b_high = 1;
+c_low = -10;
+c_high = 10;
+
+% Changing Variables
+s = 2*rand(N,1);
+s = max(s)*( 1-((condTarget-1)/condTarget)*(max(s)-s)/(max(s)-min(s))) ;
+H = diag(s);
+c =  c_low + (c_high-c_low).*rand(N,1);
+b = b_low + (b_high - b_low)*rand(m,1);
+
+% Run LDIPM with normal settings
+mu_f = 1e-10;
+mu_0 = 1e8;
+maxIter = 100;
+maxCGIter = 10000;
+CGPreCondFlag = 0;
+printFlag = 0;
+v0 = zeros(size(A,1),1);
+
+% Define sample space
+numSample = 100;
+execTime_reg = zeros(numSample,1);
+execTime_cg = zeros(numSample,1);
+CGIters = zeros(numSample,1);
+IPMIters  = zeros(numSample,1);
+NumAverage = 25;
+
+%% Produce the codegen files
+
+useMexFlag = 1;
+compileFlag = 1;
+if compileFlag && useMexFlag
+    fprintf('----------- Compiling code ---------- \n')
+    codegen logInteriorPoint_rt_mu -args {H,c,A,b,mu_f,mu_0,v0,maxIter}
+    codegen logInteriorPoint_conjgrad_rt_mu -args {H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0}
+end
+
+%% Run experiment
+
+
+% Regular
+fprintf('----------- Running regular ---------- \n')
+brokeFlag = 0;
+iOuter = 1;
+while iOuter <= numSample
+    if mod(iOuter,10) == 0
+    fprintf('Iteration number: %0.0i \n',iOuter);
+    end
+    
+    % Generate problem
+    s = 2*rand(N,1);
+    s = max(s)*( 1-((condTarget-1)/condTarget)*(max(s)-s)/(max(s)-min(s))) ;
+    H = diag(s);
+    c =  c_low + (c_high-c_low).*rand(N,1);
+    b = b_low + (b_high - b_low)*rand(m,1);
+
+    % Get optimal solution
+    OPTIONS = optimoptions('quadprog');
+    OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-12, 'ConstraintTolerance', 1e-10,'Display','off');
+    xStar = quadprog(H,c,A,b,[],[],[],[],[],OPTIONS);
+    
+    % Run and average
+    execTimeSum_reg = 0;
+    execTimeSum_cg = 0;
+    workFlag = 1;
+    for j = 1:NumAverage
+        if useMexFlag
+            [~,xError1,execTime_1,numIter1] = logInteriorPoint_rt_mu_mex(H,c,A,b,mu_f,mu_0,v0,maxIter);
+            [~,xError2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt_mu_mex(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1);
+        else
+            [~,xError1,execTime_1,numIter1] = logInteriorPoint_rt_mu(H,c,A,b,mu_f,mu_0,v0,maxIter);
+            [~,xError2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt_mu(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1);
+        end
+        if numIter1 < maxIter && numIter2 < maxIter
+            execTimeSum_reg = execTimeSum_reg + execTime_1;
+            execTimeSum_cg = execTimeSum_cg + execTime_2;
+        else
+            workFlag = 0;
+            break
+        end
+    end
+    if workFlag
+        execTime_reg(iOuter) = execTimeSum_reg/NumAverage;
+        execTime_cg(iOuter) = execTimeSum_cg/NumAverage;
+        CGIters(iOuter) = CGIters_i;
+        IPMIters(iOuter) = numIter2;
+        iOuter = iOuter + 1;
+    end % otherwise we repeat
+end
+
+
+
+% dataname = ['.\Data\muPlot_Case',num2str(caseFlag)];
+% save(dataname,'mu_f_vec','execTime_reg','execTime_cg')
+
+%% Plotting
+close all
+saveFlag = 0;
+
+figure
+semilogy(execTime_reg,'r.')
+hold on; box on; grid on
+semilogy(execTime_cg,'b.')
+legend('LDIPM','CG-LDIPM','location','Best')
+ylabel('Execution Time')
+xlabel('Trial')
+figSize = [0 0 0.2 0.2];
+set(gcf,'units','normalized','position',figSize)
+set(gcf,'Resize','off')
+if saveFlag
+    saveas(gcf,['./Figures/randomMatrices_exec_',num2str(ratio)],'epsc')
+end
+
+figure
+plot(IPMIters,'b.')
+ylabel('IPM Iterations')
+xlabel('Trial')
+grid on; box on
+figSize = [0 0 0.2 0.2];
+set(gcf,'units','normalized','position',figSize)
+set(gcf,'Resize','off')
+if saveFlag
+    saveas(gcf,['./Figures/randomMatrices_IPM_',num2str(ratio)],'epsc')
+end
+
+figure
+plot(CGIters,'b.')
+ylabel('Total CG Iterations')
+xlabel('Trial')
+grid on; box on
+figSize = [0 0 0.2 0.2];
+set(gcf,'units','normalized','position',figSize)
+set(gcf,'Resize','off')
+if saveFlag
+    saveas(gcf,['./Figures/randomMatrices_CG_',num2str(ratio)],'epsc')
+end
+
+figure
+plot(CGIters./IPMIters,'b.')
+ylabel('Average CG Iterations')
+xlabel('Trial')
+grid on; box on
+figSize = [0 0 0.2 0.2];
+set(gcf,'units','normalized','position',figSize)
+set(gcf,'Resize','off')
+if saveFlag
+    saveas(gcf,['./Figures/randomMatrices_CGNorm_',num2str(ratio)],'epsc')
+end
+

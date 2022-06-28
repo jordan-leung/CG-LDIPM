@@ -17,6 +17,6 @@
 #include <string.h>
 
 /* Function Declarations */
-void inv(const emlrtStack *sp, const real_T x[100], real_T y[100]);
+void inv(const emlrtStack *sp, const real_T x[10000], real_T y[10000]);
 
 /* End of code generation (inv.h) */

@@ -10,53 +10,63 @@
 #include "logInteriorPoint_rt_data.h"
 #include "rt_nonfinite.h"
 #include "warning.h"
-#include "xzgetrf.h"
+#include "lapacke.h"
+#include <stddef.h>
 #include <string.h>
 
 /* Variable Definitions */
-static emlrtRSInfo fc_emlrtRSI = { 20, /* lineNo */
+static emlrtRSInfo xb_emlrtRSI = { 20, /* lineNo */
   "mldivide",                          /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/ops/mldivide.m"/* pathName */
 };
 
-static emlrtRSInfo gc_emlrtRSI = { 42, /* lineNo */
+static emlrtRSInfo yb_emlrtRSI = { 42, /* lineNo */
   "mldiv",                             /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/ops/mldivide.m"/* pathName */
 };
 
-static emlrtRSInfo hc_emlrtRSI = { 67, /* lineNo */
+static emlrtRSInfo ac_emlrtRSI = { 67, /* lineNo */
   "lusolve",                           /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/lusolve.m"/* pathName */
 };
 
-static emlrtRSInfo ic_emlrtRSI = { 109,/* lineNo */
+static emlrtRSInfo bc_emlrtRSI = { 109,/* lineNo */
   "lusolveNxN",                        /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/lusolve.m"/* pathName */
 };
 
-static emlrtRSInfo jc_emlrtRSI = { 112,/* lineNo */
+static emlrtRSInfo cc_emlrtRSI = { 112,/* lineNo */
   "lusolveNxN",                        /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/lusolve.m"/* pathName */
 };
 
-static emlrtRSInfo kc_emlrtRSI = { 124,/* lineNo */
+static emlrtRSInfo dc_emlrtRSI = { 124,/* lineNo */
   "InvAtimesX",                        /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/lusolve.m"/* pathName */
 };
 
-static emlrtRSInfo lc_emlrtRSI = { 26, /* lineNo */
+static emlrtRSInfo ec_emlrtRSI = { 19, /* lineNo */
   "xgetrfs",                           /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgetrfs.m"/* pathName */
 };
 
-static emlrtRSInfo mc_emlrtRSI = { 90, /* lineNo */
+static emlrtRSInfo fc_emlrtRSI = { 108,/* lineNo */
+  "cmldiv",                            /* fcnName */
+  "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgetrfs.m"/* pathName */
+};
+
+static emlrtRSInfo gc_emlrtRSI = { 90, /* lineNo */
   "warn_singular",                     /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/lusolve.m"/* pathName */
 };
 
 /* Function Definitions */
-void mldivide(const emlrtStack *sp, const real_T A[100], real_T B[10])
+void mldivide(const emlrtStack *sp, const real_T A[10000], real_T B[100])
 {
+  ptrdiff_t IPIV[100];
+  ptrdiff_t INFO;
+  ptrdiff_t LDA;
+  ptrdiff_t N;
   emlrtStack b_st;
   emlrtStack c_st;
   emlrtStack d_st;
@@ -64,17 +74,11 @@ void mldivide(const emlrtStack *sp, const real_T A[100], real_T B[10])
   emlrtStack f_st;
   emlrtStack g_st;
   emlrtStack st;
-  real_T b_A[100];
-  real_T temp;
-  int32_T ipiv[10];
-  int32_T b_i;
-  int32_T i;
+  real_T b_A[10000];
   int32_T info;
-  int32_T k;
-  int32_T kAcol;
   st.prev = sp;
   st.tls = sp->tls;
-  st.site = &fc_emlrtRSI;
+  st.site = &xb_emlrtRSI;
   b_st.prev = &st;
   b_st.tls = st.tls;
   c_st.prev = &b_st;
@@ -87,46 +91,33 @@ void mldivide(const emlrtStack *sp, const real_T A[100], real_T B[10])
   f_st.tls = e_st.tls;
   g_st.prev = &f_st;
   g_st.tls = f_st.tls;
-  b_st.site = &gc_emlrtRSI;
-  c_st.site = &hc_emlrtRSI;
-  d_st.site = &ic_emlrtRSI;
-  e_st.site = &kc_emlrtRSI;
-  f_st.site = &lc_emlrtRSI;
-  memcpy(&b_A[0], &A[0], 100U * sizeof(real_T));
-  g_st.site = &db_emlrtRSI;
-  xzgetrf(&g_st, b_A, ipiv, &info);
-  for (i = 0; i < 9; i++) {
-    b_i = ipiv[i];
-    if (b_i != i + 1) {
-      temp = B[i];
-      B[i] = B[b_i - 1];
-      B[b_i - 1] = temp;
+  b_st.site = &yb_emlrtRSI;
+  c_st.site = &ac_emlrtRSI;
+  d_st.site = &bc_emlrtRSI;
+  e_st.site = &dc_emlrtRSI;
+  f_st.site = &ec_emlrtRSI;
+  memcpy(&b_A[0], &A[0], 10000U * sizeof(real_T));
+  N = (ptrdiff_t)100;
+  LDA = (ptrdiff_t)100;
+  INFO = LAPACKE_dgetrf_work(102, N, N, &b_A[0], LDA, &IPIV[0]);
+  info = (int32_T)INFO;
+  g_st.site = &fc_emlrtRSI;
+  if (info < 0) {
+    if (info == -1010) {
+      emlrtErrorWithMessageIdR2018a(&g_st, &emlrtRTEI, "MATLAB:nomem",
+        "MATLAB:nomem", 0);
+    } else {
+      emlrtErrorWithMessageIdR2018a(&g_st, &b_emlrtRTEI,
+        "Coder:toolbox:LAPACKCallErrorInfo", "Coder:toolbox:LAPACKCallErrorInfo",
+        5, 4, 19, cv, 12, info);
     }
   }
 
-  for (k = 0; k < 10; k++) {
-    kAcol = 10 * k;
-    if (B[k] != 0.0) {
-      b_i = k + 2;
-      for (i = b_i; i < 11; i++) {
-        B[i - 1] -= B[k] * b_A[(i + kAcol) - 1];
-      }
-    }
-  }
-
-  for (k = 9; k >= 0; k--) {
-    kAcol = 10 * k;
-    if (B[k] != 0.0) {
-      B[k] /= b_A[k + kAcol];
-      for (i = 0; i < k; i++) {
-        B[i] -= B[k] * b_A[i + kAcol];
-      }
-    }
-  }
-
+  LAPACKE_dgetrs_work(102, 'N', N, (ptrdiff_t)1, &b_A[0], LDA, &IPIV[0], &B[0],
+                      (ptrdiff_t)100);
   if (info > 0) {
-    d_st.site = &jc_emlrtRSI;
-    e_st.site = &mc_emlrtRSI;
+    d_st.site = &cc_emlrtRSI;
+    e_st.site = &gc_emlrtRSI;
     warning(&e_st);
   }
 }

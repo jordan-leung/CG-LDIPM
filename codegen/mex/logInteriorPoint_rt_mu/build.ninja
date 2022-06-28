@@ -1,0 +1,57 @@
+# CompilerName=gcc
+# Mode=optim
+ninja_required_version = 1.3
+
+# Basic folders
+root = .
+builddir = $root/build/glnxa64
+matlabdir = /home/jordanleung/MATLAB2020b
+startdir = /home/jordanleung/Documents/GitHub/CG-LDIPM
+
+# Toolchain information
+cc = /usr/bin/gcc
+cxx = g++
+linker = /usr/bin/gcc
+linkerxx = g++
+
+cflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mu_mex -c 
+
+cxxflags =  -fexceptions -fPIC -fno-omit-frame-pointer -pthread -std=c++11 -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c++11 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mu_mex -c 
+
+ldflags =  -pthread -Wl,--no-undefined -Wl,-rpath-link,$matlabdir/bin/glnxa64 -shared  -L"$matlabdir/bin/glnxa64" -lmx -lmex -lmat -lm -lstdc++  -o logInteriorPoint_rt_mu_mex.mexa64 -L"$matlabdir/bin/glnxa64" -lmwlapack -lmwblas -lemlrt -lcovrt -lut -lmwmathutil  -Wl,--version-script,logInteriorPoint_rt_mu_mex.map
+
+# Build Rules
+rule cc
+    command = $cc $cflags $in -o $out
+
+rule cxx
+    command = $cxx $cxxflags $in -o $out
+
+rule link
+    command = $linker $in $ldflags
+
+rule linkxx
+    command = $linkerxx $in $ldflags
+
+# Build
+build $builddir/logInteriorPoint_rt_mu_data.o : cc $root/logInteriorPoint_rt_mu_data.c
+build $builddir/rt_nonfinite.o : cc $root/rt_nonfinite.c
+build $builddir/logInteriorPoint_rt_mu_initialize.o : cc $root/logInteriorPoint_rt_mu_initialize.c
+build $builddir/logInteriorPoint_rt_mu_terminate.o : cc $root/logInteriorPoint_rt_mu_terminate.c
+build $builddir/logInteriorPoint_rt_mu.o : cc $root/logInteriorPoint_rt_mu.c
+build $builddir/inv.o : cc $root/inv.c
+build $builddir/warning.o : cc $root/warning.c
+build $builddir/tic.o : cc $root/tic.c
+build $builddir/timeKeeper.o : cc $root/timeKeeper.c
+build $builddir/mtimes.o : cc $root/mtimes.c
+build $builddir/toc.o : cc $root/toc.c
+build $builddir/_coder_logInteriorPoint_rt_mu_api.o : cc $root/interface/_coder_logInteriorPoint_rt_mu_api.c
+build $builddir/_coder_logInteriorPoint_rt_mu_mex.o : cc $root/interface/_coder_logInteriorPoint_rt_mu_mex.c
+build $builddir/chol.o : cc $root/chol.c
+build $builddir/mldivide.o : cc $root/mldivide.c
+build $builddir/logInteriorPoint_rt_mu_mexutil.o : cc $root/logInteriorPoint_rt_mu_mexutil.c
+build $builddir/_coder_logInteriorPoint_rt_mu_info.o : cc $root/interface/_coder_logInteriorPoint_rt_mu_info.c
+build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
+
+# Link
+build $root/logInteriorPoint_rt_mu_mex.mexa64 : link $builddir/logInteriorPoint_rt_mu_data.o $builddir/rt_nonfinite.o $builddir/logInteriorPoint_rt_mu_initialize.o $builddir/logInteriorPoint_rt_mu_terminate.o $builddir/logInteriorPoint_rt_mu.o $builddir/inv.o $builddir/warning.o $builddir/tic.o $builddir/timeKeeper.o $builddir/mtimes.o $builddir/toc.o $builddir/_coder_logInteriorPoint_rt_mu_api.o $builddir/_coder_logInteriorPoint_rt_mu_mex.o $builddir/chol.o $builddir/mldivide.o $builddir/logInteriorPoint_rt_mu_mexutil.o $builddir/_coder_logInteriorPoint_rt_mu_info.o $builddir/c_mexapi_version.o 

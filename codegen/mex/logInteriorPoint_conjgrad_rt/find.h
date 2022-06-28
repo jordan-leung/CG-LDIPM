@@ -17,7 +17,7 @@
 #include <string.h>
 
 /* Function Declarations */
-void eml_find(const emlrtStack *sp, const boolean_T x[20], int32_T i_data[],
+void eml_find(const emlrtStack *sp, const boolean_T x[50], int32_T i_data[],
               int32_T i_size[1]);
 
 /* End of code generation (find.h) */

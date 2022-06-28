@@ -8,6 +8,7 @@
 #pragma once
 
 /* Include files */
+#include "logInteriorPoint_conjgrad_rt_types.h"
 #include "rtwtypes.h"
 #include "emlrt.h"
 #include "mex.h"
@@ -17,7 +18,7 @@
 #include <string.h>
 
 /* Function Declarations */
-void d_logInteriorPoint_conjgrad_rt_(const mxArray * const prhs[12], int32_T
-  nlhs, const mxArray *plhs[4]);
+void d_logInteriorPoint_conjgrad_rt_(c_logInteriorPoint_conjgrad_rtS *SD, const
+  mxArray * const prhs[12], int32_T nlhs, const mxArray *plhs[4]);
 
 /* End of code generation (_coder_logInteriorPoint_conjgrad_rt_api.h) */

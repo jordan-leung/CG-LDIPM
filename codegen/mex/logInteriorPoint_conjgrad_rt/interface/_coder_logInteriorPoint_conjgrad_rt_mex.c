@@ -11,11 +11,12 @@
 #include "logInteriorPoint_conjgrad_rt_data.h"
 #include "logInteriorPoint_conjgrad_rt_initialize.h"
 #include "logInteriorPoint_conjgrad_rt_terminate.h"
+#include "logInteriorPoint_conjgrad_rt_types.h"
 #include "rt_nonfinite.h"
 
 /* Function Definitions */
-void logInteriorPoint_conjgrad_rt_mexFunction(int32_T nlhs, mxArray *plhs[4],
-  int32_T nrhs, const mxArray *prhs[12])
+void logInteriorPoint_conjgrad_rt_mexFunction(c_logInteriorPoint_conjgrad_rtS
+  *SD, int32_T nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[12])
 {
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
@@ -38,7 +39,7 @@ void logInteriorPoint_conjgrad_rt_mexFunction(int32_T nlhs, mxArray *plhs[4],
   }
 
   /* Call the function. */
-  d_logInteriorPoint_conjgrad_rt_(prhs, nlhs, outputs);
+  d_logInteriorPoint_conjgrad_rt_(SD, prhs, nlhs, outputs);
 
   /* Copy over outputs to the caller. */
   if (nlhs < 1) {
@@ -53,16 +54,21 @@ void logInteriorPoint_conjgrad_rt_mexFunction(int32_T nlhs, mxArray *plhs[4],
 void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
                  *prhs[])
 {
+  c_logInteriorPoint_conjgrad_rtS *d_logInteriorPoint_conjgrad_rtS = NULL;
+  d_logInteriorPoint_conjgrad_rtS = (c_logInteriorPoint_conjgrad_rtS *)
+    emlrtMxCalloc(1, (size_t)1U * sizeof(c_logInteriorPoint_conjgrad_rtS));
   mexAtExit(&logInteriorPoint_conjgrad_rt_atexit);
 
   /* Module initialization. */
   logInteriorPoint_conjgrad_rt_initialize();
 
   /* Dispatch the entry-point. */
-  logInteriorPoint_conjgrad_rt_mexFunction(nlhs, plhs, nrhs, prhs);
+  logInteriorPoint_conjgrad_rt_mexFunction(d_logInteriorPoint_conjgrad_rtS, nlhs,
+    plhs, nrhs, prhs);
 
   /* Module termination. */
   logInteriorPoint_conjgrad_rt_terminate();
+  emlrtMxFree(d_logInteriorPoint_conjgrad_rtS);
 }
 
 emlrtCTX mexFunctionCreateRootTLS(void)

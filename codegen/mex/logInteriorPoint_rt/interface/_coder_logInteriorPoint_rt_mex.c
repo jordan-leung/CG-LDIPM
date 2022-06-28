@@ -11,11 +11,12 @@
 #include "logInteriorPoint_rt_data.h"
 #include "logInteriorPoint_rt_initialize.h"
 #include "logInteriorPoint_rt_terminate.h"
+#include "logInteriorPoint_rt_types.h"
 #include "rt_nonfinite.h"
 
 /* Function Definitions */
-void logInteriorPoint_rt_mexFunction(int32_T nlhs, mxArray *plhs[4], int32_T
-  nrhs, const mxArray *prhs[10])
+void logInteriorPoint_rt_mexFunction(logInteriorPoint_rtStackData *SD, int32_T
+  nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[10])
 {
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
@@ -38,7 +39,7 @@ void logInteriorPoint_rt_mexFunction(int32_T nlhs, mxArray *plhs[4], int32_T
   }
 
   /* Call the function. */
-  logInteriorPoint_rt_api(prhs, nlhs, outputs);
+  logInteriorPoint_rt_api(SD, prhs, nlhs, outputs);
 
   /* Copy over outputs to the caller. */
   if (nlhs < 1) {
@@ -53,16 +54,21 @@ void logInteriorPoint_rt_mexFunction(int32_T nlhs, mxArray *plhs[4], int32_T
 void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs, const mxArray
                  *prhs[])
 {
+  logInteriorPoint_rtStackData *c_logInteriorPoint_rtStackDataG = NULL;
+  c_logInteriorPoint_rtStackDataG = (logInteriorPoint_rtStackData *)
+    emlrtMxCalloc(1, (size_t)1U * sizeof(logInteriorPoint_rtStackData));
   mexAtExit(&logInteriorPoint_rt_atexit);
 
   /* Module initialization. */
   logInteriorPoint_rt_initialize();
 
   /* Dispatch the entry-point. */
-  logInteriorPoint_rt_mexFunction(nlhs, plhs, nrhs, prhs);
+  logInteriorPoint_rt_mexFunction(c_logInteriorPoint_rtStackDataG, nlhs, plhs,
+    nrhs, prhs);
 
   /* Module termination. */
   logInteriorPoint_rt_terminate();
+  emlrtMxFree(c_logInteriorPoint_rtStackDataG);
 }
 
 emlrtCTX mexFunctionCreateRootTLS(void)

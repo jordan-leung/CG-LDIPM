@@ -33,4 +33,17 @@ typedef struct emxArray_real_T emxArray_real_T;
 
 #endif                                 /*typedef_emxArray_real_T*/
 
+#ifndef typedef_logInteriorPoint_rtStackData
+#define typedef_logInteriorPoint_rtStackData
+
+typedef struct {
+  struct {
+    real_T invW[10000];
+    real_T G[10000];
+    real_T b_G[10000];
+  } f0;
+} logInteriorPoint_rtStackData;
+
+#endif                                 /*typedef_logInteriorPoint_rtStackData*/
+
 /* End of code generation (logInteriorPoint_rt_types.h) */

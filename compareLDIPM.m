@@ -4,7 +4,7 @@ close all
 
 % Load data
 saveFlag = 0;
-caseFlag = 3;
+caseFlag = 5;
 switch caseFlag
     case 1 % Active constraints MPC example
         load('QPData'); 
@@ -30,20 +30,50 @@ switch caseFlag
         H = diag(linspace(0.01,1,N));
         %         H = eye(N);
         load('minmax')
-        [A,b] = minmaxMatrices(xmin,xmax);        
+        [A,b] = minmaxMatrices(xmin,xmax);
+    case 5 % Much more constraints than variables
+        
+        %         % Static variables
+        %         N = 100;
+        %         condTarget = 1e3;
+        %         m = N;
+        %         A = zeros(m,N);
+        %         for i = 1:m
+        %             A(i,1+(i-1)*(N/m):i*(N/m)) = ones(1,N/m);
+        %         end
+        %         b_low = -1;
+        %         b_high = 1;
+        %         c_low = -10;
+        %         c_high = 10;
+        %
+        %         % Changing Variables
+        %         hh= 2*rand(N,N)-1 + 2*rand(N,N)-1;
+        %         hh = hh*hh';              % symmetric with random entries beween -2 and 2
+        %         [u, s, v] = svd(hh);
+        %         s = diag(s);           % s is vector
+        %         s = s(1)*( 1-((condTarget-1)/condTarget)*(s(1)-s)/(s(1)-s(end))) ;
+        %         s = diag(s);           % back to matrix
+        %         H = u*s*v';
+        %         H = 1/2*(H' + H);
+        %         c =  c_low + (c_high-c_low).*rand(N,1);
+        %         b = b_low + (b_high - b_low)*rand(m,1);
+        %                 save('Case5_Data','H','c','A','b');
+        
+        load('Case5_Data');
 end
 invH = inv(H);
 
 
 OPTIONS = optimoptions('quadprog');
 OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-10, 'ConstraintTolerance', 1e-10);
-x_QP = quadprog(H,c,A,b,[],[],[],[],[],OPTIONS)
+x_QP = quadprog(H,c,A,b,[],[],[],[],[],OPTIONS);
 
+A*x_QP - b
 
 % Run LDIPM with normal settings
 mu_f = 1e-10;
 mu_0 = 1e8;
-maxIter = 200;
+maxIter = 500;
 maxCGIter = 10000;
 CGPreCondFlag = 0;
 printFlag = 1;
@@ -70,13 +100,14 @@ v0 = zeros(size(A,1),1);
 %     end
 % end
 % v0 = -log(s_init);
+OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-10, 'ConstraintTolerance', 1e-10);
+% fprintf('------ Running with regular scheme ------ \n')
+% [xReg,lambdaReg,sReg,vReg,~,~,numIterReg,~,~,execTimeReg] = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
+% 
+% % Diagonal noPrecond
+% fprintf('------ Running with CGLDIPM (no precond) ------ \n')
+% [x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,wsRes,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
 
-fprintf('------ Running with regular scheme ------ \n')
-[xReg,lambdaReg,sReg,vReg,~,~,numIterReg,~,~,execTimeReg] = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
-
-% Diagonal noPrecond
-fprintf('------ Running with CGLDIPM (no precond) ------ \n')
-[x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,wsRes,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
 
 % Diagonal precond
 fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
@@ -89,52 +120,52 @@ end
 %% Plotting
 close all
 
-% Warm-start comparison plot
-figure
-markSize = 15;
-hold on; grid on; box on
-h1 = plot(CGIters(:,1),'linewidth',2);
-h2 = plot(CGIters(:,2),'Color',h1.Color,'linestyle','-.','linewidth',2);
-h3 = plot(CGIters2(:,1),'linewidth',2);
-h4 = plot(CGIters2(:,2),'Color',h3.Color,'linestyle','--','linewidth',2);
-plot(CGIters(:,1),'.','markersize',markSize,'color',h1.Color);
-plot(CGIters(:,2),'.','markersize',markSize,'color',h2.Color);
-plot(CGIters2(:,1),'.','markersize',markSize,'color',h3.Color);
-plot(CGIters2(:,2),'.','markersize',markSize,'color',h4.Color);
-figSize = [0 0 0.2 0.2];
-set(gcf,'units','normalized','position',figSize)
-xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-ylabel('\# of CG Iterations','interpreter','latex','fontsize',15)
-% legend([h1 h2 h3 h4],'No cond, 1st','No cond, 2nd','Diag 1st','Diag 2nd','interpreter','latex','fontsize',12,'location','best')
-ylim([0 20])
-
-figure
-markSize = 15;
-hold on; grid on; box on
-h5 = plot(CGIters(:,1)+CGIters(:,2),'linewidth',2,'color',h1.Color);
-h6 = plot(CGIters2(:,1)+CGIters2(:,2),'linewidth',2,'color',h3.Color);
-plot(CGIters(:,1)+CGIters(:,2),'.','markersize',markSize,'color',h1.Color);
-plot(CGIters2(:,1)+CGIters2(:,2),'.','markersize',markSize,'color',h3.Color);
-figSize = [0 0 0.2 0.2];
-set(gcf,'units','normalized','position',figSize)
-xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-ylabel('Total CG Iterations','interpreter','latex','fontsize',15)
-% legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
-ylim([0 Inf])
-
-
-figure
-markSize = 15;
-h5 = semilogy(wsRes,'linewidth',2,'color',h1.Color);
-hold on; grid on; box on
-h6 = semilogy(wsRes2,'linewidth',2,'color',h3.Color);
-semilogy(wsRes,'.','markersize',markSize,'color',h5.Color);
-semilogy(wsRes2,'.','markersize',markSize,'color',h6.Color);
-figSize = [0 0 0.2 0.2];
-set(gcf,'units','normalized','position',figSize)
-xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-ylabel('Warm-start residual','interpreter','latex','fontsize',15)
-% legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
+% % Warm-start comparison plot
+% figure
+% markSize = 15;
+% hold on; grid on; box on
+% h1 = plot(CGIters(:,1),'linewidth',2);
+% h2 = plot(CGIters(:,2),'Color',h1.Color,'linestyle','-.','linewidth',2);
+% h3 = plot(CGIters2(:,1),'linewidth',2);
+% h4 = plot(CGIters2(:,2),'Color',h3.Color,'linestyle','--','linewidth',2);
+% plot(CGIters(:,1),'.','markersize',markSize,'color',h1.Color);
+% plot(CGIters(:,2),'.','markersize',markSize,'color',h2.Color);
+% plot(CGIters2(:,1),'.','markersize',markSize,'color',h3.Color);
+% plot(CGIters2(:,2),'.','markersize',markSize,'color',h4.Color);
+% figSize = [0 0 0.2 0.2];
+% set(gcf,'units','normalized','position',figSize)
+% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+% ylabel('\# of CG Iterations','interpreter','latex','fontsize',15)
+% % legend([h1 h2 h3 h4],'No cond, 1st','No cond, 2nd','Diag 1st','Diag 2nd','interpreter','latex','fontsize',12,'location','best')
+% ylim([0 20])
+% 
+% figure
+% markSize = 15;
+% hold on; grid on; box on
+% h5 = plot(CGIters(:,1)+CGIters(:,2),'linewidth',2,'color',h1.Color);
+% h6 = plot(CGIters2(:,1)+CGIters2(:,2),'linewidth',2,'color',h3.Color);
+% plot(CGIters(:,1)+CGIters(:,2),'.','markersize',markSize,'color',h1.Color);
+% plot(CGIters2(:,1)+CGIters2(:,2),'.','markersize',markSize,'color',h3.Color);
+% figSize = [0 0 0.2 0.2];
+% set(gcf,'units','normalized','position',figSize)
+% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+% ylabel('Total CG Iterations','interpreter','latex','fontsize',15)
+% % legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
+% ylim([0 Inf])
+% 
+% 
+% figure
+% markSize = 15;
+% h5 = semilogy(wsRes,'linewidth',2,'color',h1.Color);
+% hold on; grid on; box on
+% h6 = semilogy(wsRes2,'linewidth',2,'color',h3.Color);
+% semilogy(wsRes,'.','markersize',markSize,'color',h5.Color);
+% semilogy(wsRes2,'.','markersize',markSize,'color',h6.Color);
+% figSize = [0 0 0.2 0.2];
+% set(gcf,'units','normalized','position',figSize)
+% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+% ylabel('Warm-start residual','interpreter','latex','fontsize',15)
+% % legend([h5 h6],'No cond','Diag','interpreter','latex','fontsize',12,'location','best')
 
 
 % % Error plot

@@ -17,7 +17,8 @@
 #include <string.h>
 
 /* Function Declarations */
-real_T b_norm(const real_T x[20]);
-real_T c_norm(const real_T x[10]);
+real_T b_norm(const real_T x[50]);
+real_T c_norm(const real_T x[50]);
+real_T d_norm(const real_T x[100]);
 
 /* End of code generation (norm.h) */

@@ -11,8 +11,8 @@
 #include "logInteriorPoint_rt_mexutil.h"
 #include "rt_nonfinite.h"
 #include "warning.h"
-#include "xzgetrf.h"
 #include "blas.h"
+#include "lapacke.h"
 #include "mwmathutil.h"
 #include <stddef.h>
 #include <string.h>
@@ -38,17 +38,27 @@ static emlrtRSInfo cb_emlrtRSI = { 190,/* lineNo */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/matfun/inv.m"/* pathName */
 };
 
-static emlrtRSInfo lb_emlrtRSI = { 67, /* lineNo */
+static emlrtRSInfo db_emlrtRSI = { 27, /* lineNo */
+  "xgetrf",                            /* fcnName */
+  "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgetrf.m"/* pathName */
+};
+
+static emlrtRSInfo eb_emlrtRSI = { 91, /* lineNo */
+  "ceval_xgetrf",                      /* fcnName */
+  "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/+lapack/xgetrf.m"/* pathName */
+};
+
+static emlrtRSInfo fb_emlrtRSI = { 67, /* lineNo */
   "xtrsm",                             /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/+blas/xtrsm.m"/* pathName */
 };
 
-static emlrtRSInfo nb_emlrtRSI = { 42, /* lineNo */
+static emlrtRSInfo hb_emlrtRSI = { 42, /* lineNo */
   "checkcond",                         /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/matfun/inv.m"/* pathName */
 };
 
-static emlrtRSInfo ob_emlrtRSI = { 46, /* lineNo */
+static emlrtRSInfo ib_emlrtRSI = { 46, /* lineNo */
   "checkcond",                         /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/matfun/inv.m"/* pathName */
 };
@@ -59,7 +69,7 @@ static emlrtMCInfo c_emlrtMCI = { 53,  /* lineNo */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/flt2str.m"/* pName */
 };
 
-static emlrtRSInfo xc_emlrtRSI = { 53, /* lineNo */
+static emlrtRSInfo rc_emlrtRSI = { 53, /* lineNo */
   "flt2str",                           /* fcnName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/eml/+coder/+internal/flt2str.m"/* pathName */
 };
@@ -113,26 +123,28 @@ static void m_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src, const
   emlrtDestroyArray(&src);
 }
 
-void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
+void inv(const emlrtStack *sp, const real_T x[10000], real_T y[10000])
 {
   static const int32_T iv[2] = { 1, 6 };
 
   static const char_T rfmt[6] = { '%', '1', '4', '.', '6', 'e' };
 
+  ptrdiff_t ipiv_t[100];
+  ptrdiff_t info_t;
   ptrdiff_t lda_t;
   ptrdiff_t ldb_t;
-  ptrdiff_t m_t;
   ptrdiff_t n_t;
   emlrtStack b_st;
   emlrtStack c_st;
+  emlrtStack d_st;
   emlrtStack st;
   const mxArray *b_y;
   const mxArray *m;
-  real_T b_x[100];
+  real_T b_x[10000];
   real_T n1x;
   real_T n1xinv;
   real_T s;
-  int32_T ipiv[10];
+  int32_T ipiv[100];
   int32_T b_i;
   int32_T i;
   int32_T i1;
@@ -145,7 +157,7 @@ void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
   char_T SIDE1;
   char_T TRANSA1;
   char_T UPLO1;
-  int8_T p[10];
+  int8_T p[100];
   boolean_T exitg1;
   st.prev = sp;
   st.tls = sp->tls;
@@ -154,16 +166,36 @@ void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
   b_st.tls = st.tls;
   c_st.prev = &b_st;
   c_st.tls = b_st.tls;
-  memset(&y[0], 0, 100U * sizeof(real_T));
+  d_st.prev = &c_st;
+  d_st.tls = c_st.tls;
+  memset(&y[0], 0, 10000U * sizeof(real_T));
   b_st.site = &bb_emlrtRSI;
-  memcpy(&b_x[0], &x[0], 100U * sizeof(real_T));
+  memcpy(&b_x[0], &x[0], 10000U * sizeof(real_T));
   c_st.site = &db_emlrtRSI;
-  xzgetrf(&c_st, b_x, ipiv, &pipk);
-  for (i = 0; i < 10; i++) {
+  info_t = LAPACKE_dgetrf_work(102, (ptrdiff_t)100, (ptrdiff_t)100, &b_x[0],
+    (ptrdiff_t)100, &ipiv_t[0]);
+  pipk = (int32_T)info_t;
+  d_st.site = &eb_emlrtRSI;
+  if (pipk < 0) {
+    if (pipk == -1010) {
+      emlrtErrorWithMessageIdR2018a(&d_st, &emlrtRTEI, "MATLAB:nomem",
+        "MATLAB:nomem", 0);
+    } else {
+      emlrtErrorWithMessageIdR2018a(&d_st, &b_emlrtRTEI,
+        "Coder:toolbox:LAPACKCallErrorInfo", "Coder:toolbox:LAPACKCallErrorInfo",
+        5, 4, 19, cv, 12, pipk);
+    }
+  }
+
+  for (k = 0; k < 100; k++) {
+    ipiv[k] = (int32_T)ipiv_t[k];
+  }
+
+  for (i = 0; i < 100; i++) {
     p[i] = (int8_T)(i + 1);
   }
 
-  for (k = 0; k < 9; k++) {
+  for (k = 0; k < 99; k++) {
     i = ipiv[k];
     if (i > k + 1) {
       pipk = p[i - 1];
@@ -172,42 +204,42 @@ void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
     }
   }
 
-  for (k = 0; k < 10; k++) {
-    pipk = 10 * (p[k] - 1);
+  for (k = 0; k < 100; k++) {
+    pipk = 100 * (p[k] - 1);
     y[k + pipk] = 1.0;
-    for (j = k + 1; j < 11; j++) {
+    for (j = k + 1; j < 101; j++) {
       i = (j + pipk) - 1;
       if (y[i] != 0.0) {
         i1 = j + 1;
-        for (b_i = i1; b_i < 11; b_i++) {
+        for (b_i = i1; b_i < 101; b_i++) {
           y_tmp = (b_i + pipk) - 1;
-          y[y_tmp] -= y[i] * b_x[(b_i + 10 * (j - 1)) - 1];
+          y[y_tmp] -= y[i] * b_x[(b_i + 100 * (j - 1)) - 1];
         }
       }
     }
   }
 
   b_st.site = &cb_emlrtRSI;
-  c_st.site = &lb_emlrtRSI;
+  c_st.site = &fb_emlrtRSI;
   s = 1.0;
   DIAGA1 = 'N';
   TRANSA1 = 'N';
   UPLO1 = 'U';
   SIDE1 = 'L';
-  m_t = (ptrdiff_t)10;
-  n_t = (ptrdiff_t)10;
-  lda_t = (ptrdiff_t)10;
-  ldb_t = (ptrdiff_t)10;
-  dtrsm(&SIDE1, &UPLO1, &TRANSA1, &DIAGA1, &m_t, &n_t, &s, &b_x[0], &lda_t, &y[0],
-        &ldb_t);
+  info_t = (ptrdiff_t)100;
+  n_t = (ptrdiff_t)100;
+  lda_t = (ptrdiff_t)100;
+  ldb_t = (ptrdiff_t)100;
+  dtrsm(&SIDE1, &UPLO1, &TRANSA1, &DIAGA1, &info_t, &n_t, &s, &b_x[0], &lda_t,
+        &y[0], &ldb_t);
   st.site = &ab_emlrtRSI;
   n1x = 0.0;
   j = 0;
   exitg1 = false;
-  while ((!exitg1) && (j < 10)) {
+  while ((!exitg1) && (j < 100)) {
     s = 0.0;
-    for (b_i = 0; b_i < 10; b_i++) {
-      s += muDoubleScalarAbs(x[b_i + 10 * j]);
+    for (b_i = 0; b_i < 100; b_i++) {
+      s += muDoubleScalarAbs(x[b_i + 100 * j]);
     }
 
     if (muDoubleScalarIsNaN(s)) {
@@ -225,10 +257,10 @@ void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
   n1xinv = 0.0;
   j = 0;
   exitg1 = false;
-  while ((!exitg1) && (j < 10)) {
+  while ((!exitg1) && (j < 100)) {
     s = 0.0;
-    for (b_i = 0; b_i < 10; b_i++) {
-      s += muDoubleScalarAbs(y[b_i + 10 * j]);
+    for (b_i = 0; b_i < 100; b_i++) {
+      s += muDoubleScalarAbs(y[b_i + 100 * j]);
     }
 
     if (muDoubleScalarIsNaN(s)) {
@@ -245,19 +277,19 @@ void inv(const emlrtStack *sp, const real_T x[100], real_T y[100])
 
   s = 1.0 / (n1x * n1xinv);
   if ((n1x == 0.0) || (n1xinv == 0.0) || (s == 0.0)) {
-    b_st.site = &nb_emlrtRSI;
+    b_st.site = &hb_emlrtRSI;
     warning(&b_st);
   } else {
     if (muDoubleScalarIsNaN(s) || (s < 2.2204460492503131E-16)) {
-      b_st.site = &ob_emlrtRSI;
+      b_st.site = &ib_emlrtRSI;
       b_y = NULL;
       m = emlrtCreateCharArray(2, &iv[0]);
       emlrtInitCharArrayR2013a(&b_st, 6, m, &rfmt[0]);
       emlrtAssign(&b_y, m);
-      c_st.site = &xc_emlrtRSI;
+      c_st.site = &rc_emlrtRSI;
       emlrt_marshallIn(&c_st, b_sprintf(&c_st, b_y, emlrt_marshallOut(s),
         &c_emlrtMCI), "<output of sprintf>", str);
-      b_st.site = &ob_emlrtRSI;
+      b_st.site = &ib_emlrtRSI;
       b_warning(&b_st, str);
     }
   }
