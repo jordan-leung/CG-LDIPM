@@ -8,14 +8,11 @@
 /* Include files */
 #include "logInteriorPoint_rt.h"
 #include "chol.h"
-#include "indexShapeCheck.h"
 #include "inv.h"
 #include "logInteriorPoint_rt_data.h"
-#include "logInteriorPoint_rt_emxutil.h"
 #include "logInteriorPoint_rt_types.h"
 #include "mldivide.h"
 #include "mtimes.h"
-#include "norm.h"
 #include "rt_nonfinite.h"
 #include "tic.h"
 #include "toc.h"
@@ -73,72 +70,62 @@ static emlrtRSInfo j_emlrtRSI = { 68,  /* lineNo */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo k_emlrtRSI = { 77,  /* lineNo */
+static emlrtRSInfo k_emlrtRSI = { 88,  /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo l_emlrtRSI = { 92,  /* lineNo */
+static emlrtRSInfo l_emlrtRSI = { 91,  /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo m_emlrtRSI = { 97,  /* lineNo */
+static emlrtRSInfo m_emlrtRSI = { 107, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo n_emlrtRSI = { 113, /* lineNo */
+static emlrtRSInfo n_emlrtRSI = { 109, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo o_emlrtRSI = { 115, /* lineNo */
+static emlrtRSInfo o_emlrtRSI = { 113, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo p_emlrtRSI = { 119, /* lineNo */
+static emlrtRSInfo p_emlrtRSI = { 114, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo q_emlrtRSI = { 120, /* lineNo */
+static emlrtRSInfo q_emlrtRSI = { 118, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo r_emlrtRSI = { 124, /* lineNo */
+static emlrtRSInfo r_emlrtRSI = { 119, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo s_emlrtRSI = { 125, /* lineNo */
+static emlrtRSInfo s_emlrtRSI = { 128, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo t_emlrtRSI = { 134, /* lineNo */
+static emlrtRSInfo t_emlrtRSI = { 138, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo u_emlrtRSI = { 137, /* lineNo */
+static emlrtRSInfo u_emlrtRSI = { 142, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo v_emlrtRSI = { 149, /* lineNo */
-  "logInteriorPoint_rt",               /* fcnName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
-};
-
-static emlrtRSInfo w_emlrtRSI = { 153, /* lineNo */
-  "logInteriorPoint_rt",               /* fcnName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
-};
-
-static emlrtRSInfo x_emlrtRSI = { 154, /* lineNo */
+static emlrtRSInfo v_emlrtRSI = { 144, /* lineNo */
   "logInteriorPoint_rt",               /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
@@ -148,120 +135,42 @@ static emlrtRSInfo rb_emlrtRSI = { 34, /* lineNo */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/matfun/chol.m"/* pathName */
 };
 
-static emlrtRSInfo vb_emlrtRSI = { 234,/* lineNo */
+static emlrtRSInfo xb_emlrtRSI = { 224,/* lineNo */
   "solveNewtonStep_decomp",            /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo wb_emlrtRSI = { 235,/* lineNo */
-  "solveNewtonStep_decomp",            /* fcnName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
-};
-
-static emlrtRSInfo ic_emlrtRSI = { 198,/* lineNo */
+static emlrtRSInfo kc_emlrtRSI = { 188,/* lineNo */
   "muStarSolve",                       /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo lc_emlrtRSI = { 214,/* lineNo */
+static emlrtRSInfo nc_emlrtRSI = { 204,/* lineNo */
   "solveNewtonStep",                   /* fcnName */
   "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
 };
 
-static emlrtRSInfo mc_emlrtRSI = { 217,/* lineNo */
-  "solveNewtonStep",                   /* fcnName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pathName */
-};
-
-static emlrtBCInfo emlrtBCI = { -1,    /* iFirst */
-  -1,                                  /* iLast */
-  80,                                  /* lineNo */
-  12,                                  /* colNo */
-  "xError_vec",                        /* aName */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  0                                    /* checkKind */
-};
-
-static emlrtBCInfo b_emlrtBCI = { -1,  /* iFirst */
-  -1,                                  /* iLast */
-  154,                                 /* lineNo */
-  25,                                  /* colNo */
-  "xError_vec",                        /* aName */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  0                                    /* checkKind */
-};
-
-static emlrtBCInfo c_emlrtBCI = { -1,  /* iFirst */
-  -1,                                  /* iLast */
-  154,                                 /* lineNo */
-  27,                                  /* colNo */
-  "xError_vec",                        /* aName */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  0                                    /* checkKind */
-};
-
-static emlrtDCInfo emlrtDCI = { 78,    /* lineNo */
-  1,                                   /* colNo */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  1                                    /* checkKind */
-};
-
-static emlrtDCInfo b_emlrtDCI = { 78,  /* lineNo */
-  1,                                   /* colNo */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  4                                    /* checkKind */
-};
-
-static emlrtBCInfo d_emlrtBCI = { -1,  /* iFirst */
-  -1,                                  /* iLast */
-  94,                                  /* lineNo */
-  9,                                   /* colNo */
-  "xError_vec",                        /* aName */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  0                                    /* checkKind */
-};
-
-static emlrtBCInfo e_emlrtBCI = { -1,  /* iFirst */
-  -1,                                  /* iLast */
-  139,                                 /* lineNo */
-  5,                                   /* colNo */
-  "xError_vec",                        /* aName */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m",/* pName */
-  0                                    /* checkKind */
-};
-
-static emlrtRTEInfo d_emlrtRTEI = { 13,/* lineNo */
+static emlrtRTEInfo emlrtRTEI = { 13,  /* lineNo */
   9,                                   /* colNo */
   "sqrt",                              /* fName */
   "/home/jordanleung/MATLAB2020b/toolbox/eml/lib/matlab/elfun/sqrt.m"/* pName */
 };
 
-static emlrtRTEInfo h_emlrtRTEI = { 78,/* lineNo */
-  1,                                   /* colNo */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pName */
-};
-
-static emlrtRTEInfo i_emlrtRTEI = { 154,/* lineNo */
-  1,                                   /* colNo */
-  "logInteriorPoint_rt",               /* fName */
-  "/home/jordanleung/Documents/GitHub/optimizationFunctions/logInteriorPoint_rt.m"/* pName */
-};
-
 /* Function Declarations */
-static void muStarSolve(const emlrtStack *sp, const real_T d0[50], const real_T
-  d1[50], real_T mu_f, real_T *muStar, real_T d[50]);
+static void muStarSolve(const emlrtStack *sp, const real_T d0[120], const real_T
+  d1[120], real_T dinfmax, real_T mu_f, real_T *muStar, real_T d[120]);
+static void solveNewtonStep(logInteriorPoint_rtStackData *SD, const emlrtStack
+  *sp, real_T mu, const real_T v[120], const real_T const_W[14400], const real_T
+  const_c[120], const real_T const_A[14400], const real_T const_b[120], real_T
+  x[120]);
+static void solveNewtonStep_decomp(logInteriorPoint_rtStackData *SD, const
+  emlrtStack *sp, real_T mu, const real_T v[120], const real_T const_c[120],
+  const real_T const_A[14400], const real_T const_b[120], const real_T dG[14400],
+  real_T x[120], real_T d[120]);
 
 /* Function Definitions */
-static void muStarSolve(const emlrtStack *sp, const real_T d0[50], const real_T
-  d1[50], real_T mu_f, real_T *muStar, real_T d[50])
+static void muStarSolve(const emlrtStack *sp, const real_T d0[120], const real_T
+  d1[120], real_T dinfmax, real_T mu_f, real_T *muStar, real_T d[120])
 {
   emlrtStack st;
   real_T lower_bound;
@@ -279,9 +188,9 @@ static void muStarSolve(const emlrtStack *sp, const real_T d0[50], const real_T
   lower_bound = 0.0;
   i = 0;
   exitg1 = false;
-  while ((!exitg1) && (i < 50)) {
-    upper_bound_i = (1.0 - d0[i]) / d1[i];
-    lower_bound_i = (-1.0 - d0[i]) / d1[i];
+  while ((!exitg1) && (i < 120)) {
+    upper_bound_i = (dinfmax - d0[i]) / d1[i];
+    lower_bound_i = (-dinfmax - d0[i]) / d1[i];
 
     /*  Neither is either lower or upper necessarily, so just reorder */
     /*  according to whichever is larger */
@@ -330,47 +239,164 @@ static void muStarSolve(const emlrtStack *sp, const real_T d0[50], const real_T
     }
   }
 
-  st.site = &ic_emlrtRSI;
+  st.site = &kc_emlrtRSI;
   if (*muStar < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
+    emlrtErrorWithMessageIdR2018a(&st, &emlrtRTEI,
       "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
       4, "sqrt");
   }
 
   upper_bound_i = 1.0 / muDoubleScalarSqrt(*muStar);
-  for (i = 0; i < 50; i++) {
+  for (i = 0; i < 120; i++) {
     d[i] = d0[i] + upper_bound_i * d1[i];
   }
 }
 
+static void solveNewtonStep(logInteriorPoint_rtStackData *SD, const emlrtStack
+  *sp, real_T mu, const real_T v[120], const real_T const_W[14400], const real_T
+  const_c[120], const real_T const_A[14400], const real_T const_b[120], real_T
+  x[120])
+{
+  emlrtStack st;
+  real_T Qvec[120];
+  real_T y;
+  int32_T i;
+  int32_T k;
+  st.prev = sp;
+  st.tls = sp->tls;
+
+  /*  Construct Q matrix */
+  for (k = 0; k < 120; k++) {
+    Qvec[k] = muDoubleScalarExp(2.0 * v[k]);
+  }
+
+  memset(&SD->u1.f1.Q[0], 0, 14400U * sizeof(real_T));
+  for (k = 0; k < 120; k++) {
+    SD->u1.f1.Q[k + 120 * k] = Qvec[k];
+  }
+
+  /*  Solve for x */
+  mtimes(const_A, SD->u1.f1.Q, SD->u1.f1.y);
+  b_mtimes(SD->u1.f1.y, const_A, SD->u1.f1.b_y);
+  st.site = &nc_emlrtRSI;
+  if (mu < 0.0) {
+    emlrtErrorWithMessageIdR2018a(&st, &emlrtRTEI,
+      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
+      4, "sqrt");
+  }
+
+  y = 2.0 * muDoubleScalarSqrt(mu);
+  for (k = 0; k < 120; k++) {
+    Qvec[k] = muDoubleScalarExp(v[k]);
+    for (i = 0; i < 120; i++) {
+      SD->u1.f1.y[i + 120 * k] = y * const_A[k + 120 * i];
+    }
+  }
+
+  c_mtimes(SD->u1.f1.y, Qvec, x);
+  mtimes(const_A, SD->u1.f1.Q, SD->u1.f1.y);
+  c_mtimes(SD->u1.f1.y, const_b, Qvec);
+  for (i = 0; i < 120; i++) {
+    x[i] -= const_c[i] + Qvec[i];
+  }
+
+  for (i = 0; i < 14400; i++) {
+    SD->u1.f1.b_y[i] += const_W[i];
+  }
+
+  st.site = &nc_emlrtRSI;
+  mldivide(&st, SD->u1.f1.b_y, x);
+
+  /*  Solve for d */
+  c_mtimes(const_A, x, Qvec);
+}
+
+static void solveNewtonStep_decomp(logInteriorPoint_rtStackData *SD, const
+  emlrtStack *sp, real_T mu, const real_T v[120], const real_T const_c[120],
+  const real_T const_A[14400], const real_T const_b[120], const real_T dG[14400],
+  real_T x[120], real_T d[120])
+{
+  emlrtStack st;
+  real_T Qvec[120];
+  real_T y;
+  real_T y_tmp;
+  int32_T i;
+  int32_T k;
+  st.prev = sp;
+  st.tls = sp->tls;
+
+  /*  Construct Q matrix */
+  for (k = 0; k < 120; k++) {
+    Qvec[k] = muDoubleScalarExp(2.0 * v[k]);
+  }
+
+  memset(&SD->u1.f0.Q[0], 0, 14400U * sizeof(real_T));
+  for (k = 0; k < 120; k++) {
+    SD->u1.f0.Q[k + 120 * k] = Qvec[k];
+  }
+
+  /*  Solve for x */
+  /*  x =  dG\(2*sqrt(mu)*A'*exp(v) - (c + A'*Q*b)); */
+  st.site = &xb_emlrtRSI;
+  if (mu < 0.0) {
+    emlrtErrorWithMessageIdR2018a(&st, &emlrtRTEI,
+      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
+      4, "sqrt");
+  }
+
+  y_tmp = muDoubleScalarSqrt(mu);
+  y = 2.0 * y_tmp;
+  for (k = 0; k < 120; k++) {
+    Qvec[k] = muDoubleScalarExp(v[k]);
+    for (i = 0; i < 120; i++) {
+      SD->u1.f0.y[i + 120 * k] = y * const_A[k + 120 * i];
+    }
+  }
+
+  c_mtimes(SD->u1.f0.y, Qvec, x);
+  mtimes(const_A, SD->u1.f0.Q, SD->u1.f0.y);
+  c_mtimes(SD->u1.f0.y, const_b, Qvec);
+  for (i = 0; i < 120; i++) {
+    x[i] -= const_c[i] + Qvec[i];
+    for (k = 0; k < 120; k++) {
+      SD->u1.f0.Q[k + 120 * i] = dG[i + 120 * k];
+    }
+  }
+
+  st.site = &xb_emlrtRSI;
+  mldivide(&st, SD->u1.f0.Q, x);
+  st.site = &xb_emlrtRSI;
+  mldivide(&st, dG, x);
+  y_tmp = 1.0 / y_tmp;
+  for (k = 0; k < 120; k++) {
+    d[k] = muDoubleScalarExp(v[k]);
+  }
+
+  c_mtimes(const_A, x, Qvec);
+  for (i = 0; i < 120; i++) {
+    d[i] = 1.0 - y_tmp * d[i] * (Qvec[i] + const_b[i]);
+  }
+}
+
 void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
-  const real_T W[10000], const real_T c[100], real_T A[5000], const real_T
-  bineq[50], real_T mu_f, real_T mu_0, const real_T v0[50], real_T maxIter,
-  const real_T xStar[100], real_T xTol, real_T x[100], emxArray_real_T
-  *xError_vec, real_T *execTime, real_T *numIter)
+  const real_T W[14400], const real_T c[120], real_T A[14400], const real_T
+  bineq[120], real_T mu_f, real_T mu_0, const real_T v0[120], real_T maxIter,
+  real_T x[120], real_T *mu, real_T *execTime, real_T *numIter)
 {
   emlrtStack b_st;
   emlrtStack st;
-  real_T y[5000];
-  real_T y_tmp[5000];
-  real_T Q[2500];
-  real_T b_y[100];
-  real_T c_y[100];
-  real_T Qvec[50];
-  real_T b[50];
-  real_T b_Qvec[50];
-  real_T c0[50];
-  real_T d[50];
-  real_T d_y[50];
-  real_T v[50];
+  real_T Qvec[120];
+  real_T b_c0[120];
+  real_T d[120];
+  real_T d1Hat[120];
+  real_T d2Hat[120];
+  real_T v[120];
   real_T a;
+  real_T c0;
   real_T k2;
-  real_T mu;
   real_T mu1;
   real_T mu2;
-  real_T xError;
-  int32_T iv[2];
-  int32_T i;
+  int32_T exitg1;
   int32_T k;
   int32_T startFlag;
   st.prev = sp;
@@ -382,13 +408,13 @@ void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
   /*  Get size variables */
   /*  First, change variables to Ax + b >= 0... This is just for uniformity */
   /*  with quadprog's inputs. */
-  for (i = 0; i < 5000; i++) {
-    A[i] = -A[i];
+  for (startFlag = 0; startFlag < 14400; startFlag++) {
+    A[startFlag] = -A[startFlag];
   }
 
   /*  Pack */
   st.site = &emlrtRSI;
-  inv(&st, W, SD->f0.invW);
+  inv(&st, W, SD->f2.Q);
 
   /*  Max amount of bisection iterations */
   *numIter = 0.0;
@@ -403,208 +429,94 @@ void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
   /*  within N iterations of biscection... If not, then we just initialize with */
   /*  mu0 */
   /*  Construct Q matrix */
-  for (k = 0; k < 50; k++) {
-    xError = 2.0 * v0[k];
-    Qvec[k] = xError;
-    b_Qvec[k] = muDoubleScalarExp(xError);
+  for (k = 0; k < 120; k++) {
+    Qvec[k] = muDoubleScalarExp(2.0 * v0[k]);
   }
 
-  memset(&Q[0], 0, 2500U * sizeof(real_T));
-  for (k = 0; k < 50; k++) {
-    Q[k + 50 * k] = b_Qvec[k];
+  memset(&SD->f2.Q[0], 0, 14400U * sizeof(real_T));
+  for (startFlag = 0; startFlag < 120; startFlag++) {
+    SD->f2.Q[startFlag + 120 * startFlag] = Qvec[startFlag];
   }
 
   st.site = &c_emlrtRSI;
-  mtimes(A, Q, y);
+  mtimes(A, SD->f2.Q, SD->f2.y);
   st.site = &c_emlrtRSI;
-  b_mtimes(y, A, SD->f0.G);
+  b_mtimes(SD->f2.y, A, SD->f2.Q);
 
   /*  dG = decomposition(G,'lu'); */
   /*  dG = decomposition(1/2*(G+G'),'chol'); */
   st.site = &d_emlrtRSI;
-  for (i = 0; i < 10000; i++) {
-    SD->f0.G[i] += W[i];
+  for (startFlag = 0; startFlag < 14400; startFlag++) {
+    SD->f2.Q[startFlag] += W[startFlag];
   }
 
   b_st.site = &rb_emlrtRSI;
-  cholesky(&b_st, SD->f0.G);
+  cholesky(&b_st, SD->f2.Q);
 
   /*  First, we sample two points of (mu,d) and solve the linear system */
   /*  generated by d = d0 + k*d1, where k = 1/sqrt(mu) */
   /*  Sample point 1 */
   st.site = &e_emlrtRSI;
   if (mu_0 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
+    emlrtErrorWithMessageIdR2018a(&st, &emlrtRTEI,
       "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
       4, "sqrt");
   }
 
   st.site = &f_emlrtRSI;
-
-  /*  Construct Q matrix */
-  for (k = 0; k < 50; k++) {
-    b_Qvec[k] = muDoubleScalarExp(Qvec[k]);
-  }
-
-  memset(&Q[0], 0, 2500U * sizeof(real_T));
-  for (k = 0; k < 50; k++) {
-    Q[k + 50 * k] = b_Qvec[k];
-  }
-
-  /*  Solve for x */
-  /*  x =  dG\(2*sqrt(mu)*A'*exp(v) - (c + A'*Q*b)); */
-  b_st.site = &vb_emlrtRSI;
-  if (mu_0 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
-  xError = 2.0 * muDoubleScalarSqrt(mu_0);
-  for (k = 0; k < 50; k++) {
-    b[k] = muDoubleScalarExp(v0[k]);
-    for (i = 0; i < 100; i++) {
-      y[i + 100 * k] = xError * A[k + 50 * i];
-    }
-  }
-
-  c_mtimes(y, b, b_y);
-  mtimes(A, Q, y);
-  c_mtimes(y, bineq, c_y);
-  for (i = 0; i < 100; i++) {
-    b_y[i] -= c[i] + c_y[i];
-    for (k = 0; k < 100; k++) {
-      SD->f0.b_G[k + 100 * i] = SD->f0.G[i + 100 * k];
-    }
-  }
-
-  b_st.site = &vb_emlrtRSI;
-  mldivide(&b_st, SD->f0.b_G, b_y);
-  b_st.site = &vb_emlrtRSI;
-  mldivide(&b_st, SD->f0.G, b_y);
-  b_st.site = &wb_emlrtRSI;
-  if (mu_0 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
-  a = 1.0 / muDoubleScalarSqrt(mu_0);
-  for (k = 0; k < 50; k++) {
-    b[k] = muDoubleScalarExp(v0[k]);
-  }
-
-  d_mtimes(A, b_y, d_y);
-  for (i = 0; i < 50; i++) {
-    b[i] = 1.0 - a * b[i] * (d_y[i] + bineq[i]);
-  }
+  solveNewtonStep_decomp(SD, &st, mu_0, v0, c, A, bineq, SD->f2.Q, Qvec, d1Hat);
 
   /*  Sample point 2 */
   mu2 = 0.1 * mu_0;
   st.site = &g_emlrtRSI;
-  if (mu2 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
   k2 = 1.0 / muDoubleScalarSqrt(mu2);
   st.site = &h_emlrtRSI;
-
-  /*  Construct Q matrix */
-  for (k = 0; k < 50; k++) {
-    Qvec[k] = muDoubleScalarExp(Qvec[k]);
-  }
-
-  memset(&Q[0], 0, 2500U * sizeof(real_T));
-  for (k = 0; k < 50; k++) {
-    Q[k + 50 * k] = Qvec[k];
-  }
-
-  /*  Solve for x */
-  /*  x =  dG\(2*sqrt(mu)*A'*exp(v) - (c + A'*Q*b)); */
-  b_st.site = &vb_emlrtRSI;
-  if (mu2 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
-  xError = 2.0 * muDoubleScalarSqrt(mu2);
-  for (k = 0; k < 50; k++) {
-    b_Qvec[k] = muDoubleScalarExp(v0[k]);
-    for (i = 0; i < 100; i++) {
-      y[i + 100 * k] = xError * A[k + 50 * i];
-    }
-  }
-
-  c_mtimes(y, b_Qvec, b_y);
-  mtimes(A, Q, y);
-  c_mtimes(y, bineq, c_y);
-  for (i = 0; i < 100; i++) {
-    b_y[i] -= c[i] + c_y[i];
-    for (k = 0; k < 100; k++) {
-      SD->f0.b_G[k + 100 * i] = SD->f0.G[i + 100 * k];
-    }
-  }
-
-  b_st.site = &vb_emlrtRSI;
-  mldivide(&b_st, SD->f0.b_G, b_y);
-  b_st.site = &vb_emlrtRSI;
-  mldivide(&b_st, SD->f0.G, b_y);
-  b_st.site = &wb_emlrtRSI;
-  if (mu2 < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
-  a = 1.0 / muDoubleScalarSqrt(mu2);
-  for (k = 0; k < 50; k++) {
-    b_Qvec[k] = muDoubleScalarExp(v0[k]);
-  }
-
-  d_mtimes(A, b_y, d_y);
-  for (i = 0; i < 50; i++) {
-    b_Qvec[i] = 1.0 - a * b_Qvec[i] * (d_y[i] + bineq[i]);
-  }
+  solveNewtonStep_decomp(SD, &st, mu2, v0, c, A, bineq, SD->f2.Q, Qvec, d2Hat);
 
   /*  Obtain affine representation of d = d0 + k*d1 */
   mu2 = 1.0 / muDoubleScalarSqrt(mu_0) - k2;
-  k2 = -k2 / mu2;
+  c0 = -k2 / mu2;
   a = 1.0 / mu2;
 
   /*  Solve for muStar */
-  for (i = 0; i < 50; i++) {
-    xError = b[i];
-    mu2 = b_Qvec[i];
-    c0[i] = k2 * xError + (1.0 - k2) * mu2;
-    d_y[i] = a * (xError - mu2);
+  for (startFlag = 0; startFlag < 120; startFlag++) {
+    mu2 = d1Hat[startFlag];
+    k2 = d2Hat[startFlag];
+    b_c0[startFlag] = c0 * mu2 + (1.0 - c0) * k2;
+    mu2 = a * (mu2 - k2);
+    d1Hat[startFlag] = mu2;
   }
 
   st.site = &i_emlrtRSI;
-  muStarSolve(&st, c0, d_y, mu_f, &mu, d);
+  muStarSolve(&st, b_c0, d1Hat, 1.0, mu_f, mu, d);
 
   /*  If we found a muStar (or a feasible point), then use these values */
-  if (!muDoubleScalarIsInf(mu)) {
+  if (!muDoubleScalarIsInf(*mu)) {
     startFlag = 1;
 
     /*  Update v - this updates regardless of whether or not we find a */
     /*  feasible mu... Either just iterates off mu0, or to muStar */
     st.site = &j_emlrtRSI;
-    a = b_norm(d);
+    a = 0.0;
+    for (k = 0; k < 120; k++) {
+      c0 = muDoubleScalarAbs(d[k]);
+      if (muDoubleScalarIsNaN(c0) || (c0 > a)) {
+        a = c0;
+      }
+    }
+
     a = muDoubleScalarMin(1.0, 1.0 / (a * a));
-    for (k = 0; k < 50; k++) {
+    for (k = 0; k < 120; k++) {
       v[k] = v0[k] + a * d[k];
     }
 
     *numIter = 1.0;
   } else {
     /*  Otherwise, truly give  up and cold start */
-    mu = mu_0;
+    *mu = mu_0;
 
     /*  under the update at the end */
-    for (k = 0; k < 50; k++) {
+    for (k = 0; k < 120; k++) {
       d[k] *= rtInf;
       v[k] = 0.0;
     }
@@ -612,168 +524,102 @@ void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
     startFlag = 0;
   }
 
-  st.site = &k_emlrtRSI;
-  if (mu < 0.0) {
-    emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
-      "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-      4, "sqrt");
-  }
-
-  xError = muDoubleScalarSqrt(mu);
-  for (i = 0; i < 50; i++) {
-    for (k = 0; k < 100; k++) {
-      y_tmp[k + 100 * i] = A[i + 50 * k];
-    }
-  }
-
-  st.site = &k_emlrtRSI;
-  for (k = 0; k < 50; k++) {
-    mu2 = muDoubleScalarExp(v[k]);
-    b_Qvec[k] = mu2;
-    Qvec[k] = mu2;
-  }
-
-  for (i = 0; i < 5000; i++) {
-    y[i] = xError * y_tmp[i];
-  }
-
-  for (i = 0; i < 50; i++) {
-    c0[i] = b_Qvec[i] + Qvec[i] * d[i];
-  }
-
-  c_mtimes(y, c0, b_y);
-  st.site = &k_emlrtRSI;
-  for (i = 0; i < 100; i++) {
-    b_y[i] -= c[i];
-  }
-
-  e_mtimes(SD->f0.invW, b_y, x);
-  if (!(maxIter >= 0.0)) {
-    emlrtNonNegativeCheckR2012b(maxIter, &b_emlrtDCI, sp);
-  }
-
-  xError = (int32_T)muDoubleScalarFloor(maxIter);
-  if (maxIter != xError) {
-    emlrtIntegerCheckR2012b(maxIter, &emlrtDCI, sp);
-  }
-
-  i = xError_vec->size[0];
-  xError_vec->size[0] = (int32_T)maxIter;
-  emxEnsureCapacity_real_T(sp, xError_vec, i, &h_emlrtRTEI);
-  if (maxIter != xError) {
-    emlrtIntegerCheckR2012b(maxIter, &emlrtDCI, sp);
-  }
-
-  k = (int32_T)maxIter;
-  for (i = 0; i < k; i++) {
-    xError_vec->data[i] = 0.0;
-  }
-
-  for (i = 0; i < 100; i++) {
-    c_y[i] = x[i] - xStar[i];
-  }
-
-  xError = c_norm(c_y);
-  if (1 > (int32_T)maxIter) {
-    emlrtDynamicBoundsCheckR2012b(1, 1, (int32_T)maxIter, &emlrtBCI, sp);
-  }
-
-  xError_vec->data[0] = xError;
-
   /*  If we have a pair (mu,d) with d > 1 and we iterate the Newton */
   /*  algorithm until we obtain convergence. If we found a muStar from our */
   /*  initialization, this loop will be skipped. */
   if (startFlag < 1) {
-    while ((b_norm(d) > 1.0) && (!(*numIter >= maxIter))) {
-      /*  Solve for d */
-      st.site = &l_emlrtRSI;
-
-      /*  Construct Q matrix */
-      for (k = 0; k < 50; k++) {
-        b_Qvec[k] = muDoubleScalarExp(2.0 * v[k]);
-      }
-
-      memset(&Q[0], 0, 2500U * sizeof(real_T));
-      for (k = 0; k < 50; k++) {
-        Q[k + 50 * k] = b_Qvec[k];
-      }
-
-      /*  Solve for x */
-      mtimes(A, Q, y);
-      b_mtimes(y, A, SD->f0.G);
-      b_st.site = &lc_emlrtRSI;
-      if (mu < 0.0) {
-        emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-          "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3,
-          4, 4, "sqrt");
-      }
-
-      xError = 2.0 * muDoubleScalarSqrt(mu);
-      for (k = 0; k < 50; k++) {
-        b[k] = muDoubleScalarExp(v[k]);
-        for (i = 0; i < 100; i++) {
-          y[i + 100 * k] = xError * A[k + 50 * i];
+    do {
+      exitg1 = 0;
+      k2 = 0.0;
+      for (k = 0; k < 120; k++) {
+        c0 = muDoubleScalarAbs(d[k]);
+        if (muDoubleScalarIsNaN(c0) || (c0 > k2)) {
+          k2 = c0;
         }
       }
 
-      c_mtimes(y, b, x);
-      mtimes(A, Q, y);
-      c_mtimes(y, bineq, b_y);
-      for (i = 0; i < 100; i++) {
-        x[i] -= c[i] + b_y[i];
+      if ((k2 > 1.0) && (!(*numIter >= maxIter))) {
+        /*  Solve for d */
+        st.site = &k_emlrtRSI;
+
+        /*  Construct Q matrix */
+        for (k = 0; k < 120; k++) {
+          Qvec[k] = muDoubleScalarExp(2.0 * v[k]);
+        }
+
+        memset(&SD->f2.Q[0], 0, 14400U * sizeof(real_T));
+        for (startFlag = 0; startFlag < 120; startFlag++) {
+          SD->f2.Q[startFlag + 120 * startFlag] = Qvec[startFlag];
+        }
+
+        /*  Solve for x */
+        mtimes(A, SD->f2.Q, SD->f2.y);
+        b_mtimes(SD->f2.y, A, SD->f2.b_y);
+        b_st.site = &nc_emlrtRSI;
+        if (*mu < 0.0) {
+          emlrtErrorWithMessageIdR2018a(&b_st, &emlrtRTEI,
+            "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError",
+            3, 4, 4, "sqrt");
+        }
+
+        mu2 = muDoubleScalarSqrt(*mu);
+        k2 = 2.0 * mu2;
+        for (k = 0; k < 120; k++) {
+          Qvec[k] = muDoubleScalarExp(v[k]);
+          for (startFlag = 0; startFlag < 120; startFlag++) {
+            SD->f2.y[startFlag + 120 * k] = k2 * A[k + 120 * startFlag];
+          }
+        }
+
+        c_mtimes(SD->f2.y, Qvec, d2Hat);
+        mtimes(A, SD->f2.Q, SD->f2.y);
+        c_mtimes(SD->f2.y, bineq, Qvec);
+        for (startFlag = 0; startFlag < 120; startFlag++) {
+          d2Hat[startFlag] -= c[startFlag] + Qvec[startFlag];
+        }
+
+        for (startFlag = 0; startFlag < 14400; startFlag++) {
+          SD->f2.b_y[startFlag] += W[startFlag];
+        }
+
+        b_st.site = &nc_emlrtRSI;
+        mldivide(&b_st, SD->f2.b_y, d2Hat);
+
+        /*  Solve for d */
+        a = 1.0 / mu2;
+        for (k = 0; k < 120; k++) {
+          d[k] = muDoubleScalarExp(v[k]);
+        }
+
+        c_mtimes(A, d2Hat, Qvec);
+        for (startFlag = 0; startFlag < 120; startFlag++) {
+          d[startFlag] = 1.0 - a * d[startFlag] * (Qvec[startFlag] +
+            bineq[startFlag]);
+        }
+
+        /*  Update v */
+        st.site = &l_emlrtRSI;
+        a = 0.0;
+        for (k = 0; k < 120; k++) {
+          c0 = muDoubleScalarAbs(d[k]);
+          if (muDoubleScalarIsNaN(c0) || (c0 > a)) {
+            a = c0;
+          }
+        }
+
+        a = muDoubleScalarMin(1.0, 1.0 / (a * a));
+        for (startFlag = 0; startFlag < 120; startFlag++) {
+          v[startFlag] += a * d[startFlag];
+        }
+
+        (*numIter)++;
+        if (*emlrtBreakCheckR2012bFlagVar != 0) {
+          emlrtBreakCheckR2012b(sp);
+        }
+      } else {
+        exitg1 = 1;
       }
-
-      for (i = 0; i < 10000; i++) {
-        SD->f0.G[i] += W[i];
-      }
-
-      b_st.site = &lc_emlrtRSI;
-      mldivide(&b_st, SD->f0.G, x);
-
-      /*  Solve for d */
-      b_st.site = &mc_emlrtRSI;
-      if (mu < 0.0) {
-        emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-          "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3,
-          4, 4, "sqrt");
-      }
-
-      a = 1.0 / muDoubleScalarSqrt(mu);
-      for (k = 0; k < 50; k++) {
-        d[k] = muDoubleScalarExp(v[k]);
-      }
-
-      d_mtimes(A, x, d_y);
-      for (i = 0; i < 50; i++) {
-        d[i] = 1.0 - a * d[i] * (d_y[i] + bineq[i]);
-      }
-
-      for (i = 0; i < 100; i++) {
-        c_y[i] = x[i] - xStar[i];
-      }
-
-      xError = c_norm(c_y);
-      if (((int32_T)(*numIter + 1.0) < 1) || ((int32_T)(*numIter + 1.0) >
-           xError_vec->size[0])) {
-        emlrtDynamicBoundsCheckR2012b((int32_T)(*numIter + 1.0), 1,
-          xError_vec->size[0], &d_emlrtBCI, sp);
-      }
-
-      xError_vec->data[(int32_T)(*numIter + 1.0) - 1] = xError;
-
-      /*  Update v */
-      st.site = &m_emlrtRSI;
-      a = b_norm(d);
-      a = muDoubleScalarMin(1.0, 1.0 / (a * a));
-      for (i = 0; i < 50; i++) {
-        v[i] += a * d[i];
-      }
-
-      (*numIter)++;
-      if (*emlrtBreakCheckR2012bFlagVar != 0) {
-        emlrtBreakCheckR2012b(sp);
-      }
-    }
+    } while (exitg1 == 0);
 
     /*  We want at least aa feasible soluton */
   }
@@ -782,245 +628,86 @@ void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
   /*  Then, we finally run the main loop which selects uStar */
   /*  Construct Q matrix */
   mu2 = 1.0;
-  while (((xError > xTol) || (mu2 > 1.0)) && (*numIter < maxIter)) {
+  while (((*mu > mu_f) || (mu2 > 1.0)) && (*numIter < maxIter)) {
     /*  First, we sample two points of (mu,d) and solve the linear system */
     /*  generated by d = d0 + k*d1, where k = 1/sqrt(mu) */
-    for (k = 0; k < 50; k++) {
-      xError = 2.0 * v[k];
-      Qvec[k] = xError;
-      d_y[k] = muDoubleScalarExp(xError);
+    for (k = 0; k < 120; k++) {
+      d2Hat[k] = muDoubleScalarExp(2.0 * v[k]);
     }
 
-    memset(&Q[0], 0, 2500U * sizeof(real_T));
-    for (k = 0; k < 50; k++) {
-      Q[k + 50 * k] = d_y[k];
+    memset(&SD->f2.Q[0], 0, 14400U * sizeof(real_T));
+    for (startFlag = 0; startFlag < 120; startFlag++) {
+      SD->f2.Q[startFlag + 120 * startFlag] = d2Hat[startFlag];
     }
 
-    st.site = &n_emlrtRSI;
-    mtimes(A, Q, y);
-    st.site = &n_emlrtRSI;
-    b_mtimes(y, A, SD->f0.G);
+    st.site = &m_emlrtRSI;
+    mtimes(A, SD->f2.Q, SD->f2.y);
+    st.site = &m_emlrtRSI;
+    b_mtimes(SD->f2.y, A, SD->f2.Q);
 
     /*      dG = decomposition(1/2*(G+G'),'chol'); */
-    st.site = &o_emlrtRSI;
-    for (i = 0; i < 10000; i++) {
-      SD->f0.G[i] += W[i];
+    st.site = &n_emlrtRSI;
+    for (startFlag = 0; startFlag < 14400; startFlag++) {
+      SD->f2.Q[startFlag] += W[startFlag];
     }
 
     b_st.site = &rb_emlrtRSI;
-    cholesky(&b_st, SD->f0.G);
+    cholesky(&b_st, SD->f2.Q);
 
     /*  Sample point 1 */
-    mu1 = mu;
+    mu1 = *mu;
+    st.site = &o_emlrtRSI;
+    if (*mu < 0.0) {
+      emlrtErrorWithMessageIdR2018a(&st, &emlrtRTEI,
+        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
+        4, "sqrt");
+    }
+
     st.site = &p_emlrtRSI;
-    if (mu < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    st.site = &q_emlrtRSI;
-
-    /*  Construct Q matrix */
-    for (k = 0; k < 50; k++) {
-      b_Qvec[k] = muDoubleScalarExp(Qvec[k]);
-    }
-
-    memset(&Q[0], 0, 2500U * sizeof(real_T));
-    for (k = 0; k < 50; k++) {
-      Q[k + 50 * k] = b_Qvec[k];
-    }
-
-    /*  Solve for x */
-    /*  x =  dG\(2*sqrt(mu)*A'*exp(v) - (c + A'*Q*b)); */
-    b_st.site = &vb_emlrtRSI;
-    if (mu < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    xError = 2.0 * muDoubleScalarSqrt(mu);
-    for (k = 0; k < 50; k++) {
-      b[k] = muDoubleScalarExp(v[k]);
-      for (i = 0; i < 100; i++) {
-        y[i + 100 * k] = xError * A[k + 50 * i];
-      }
-    }
-
-    c_mtimes(y, b, b_y);
-    mtimes(A, Q, y);
-    c_mtimes(y, bineq, c_y);
-    for (i = 0; i < 100; i++) {
-      b_y[i] -= c[i] + c_y[i];
-      for (k = 0; k < 100; k++) {
-        SD->f0.b_G[k + 100 * i] = SD->f0.G[i + 100 * k];
-      }
-    }
-
-    b_st.site = &vb_emlrtRSI;
-    mldivide(&b_st, SD->f0.b_G, b_y);
-    b_st.site = &vb_emlrtRSI;
-    mldivide(&b_st, SD->f0.G, b_y);
-    b_st.site = &wb_emlrtRSI;
-    if (mu < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    a = 1.0 / muDoubleScalarSqrt(mu);
-    for (k = 0; k < 50; k++) {
-      b[k] = muDoubleScalarExp(v[k]);
-    }
-
-    d_mtimes(A, b_y, d_y);
-    for (i = 0; i < 50; i++) {
-      b[i] = 1.0 - a * b[i] * (d_y[i] + bineq[i]);
-    }
+    solveNewtonStep_decomp(SD, &st, *mu, v, c, A, bineq, SD->f2.Q, Qvec, d1Hat);
 
     /*  Sample point 2 */
-    mu2 = 0.1 * mu;
-    st.site = &r_emlrtRSI;
-    if (mu2 < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
+    mu2 = 0.1 * *mu;
+    st.site = &q_emlrtRSI;
     k2 = 1.0 / muDoubleScalarSqrt(mu2);
-    st.site = &s_emlrtRSI;
-
-    /*  Construct Q matrix */
-    for (k = 0; k < 50; k++) {
-      Qvec[k] = muDoubleScalarExp(Qvec[k]);
-    }
-
-    memset(&Q[0], 0, 2500U * sizeof(real_T));
-    for (k = 0; k < 50; k++) {
-      Q[k + 50 * k] = Qvec[k];
-    }
-
-    /*  Solve for x */
-    /*  x =  dG\(2*sqrt(mu)*A'*exp(v) - (c + A'*Q*b)); */
-    b_st.site = &vb_emlrtRSI;
-    if (mu2 < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    xError = 2.0 * muDoubleScalarSqrt(mu2);
-    for (k = 0; k < 50; k++) {
-      b_Qvec[k] = muDoubleScalarExp(v[k]);
-      for (i = 0; i < 100; i++) {
-        y[i + 100 * k] = xError * A[k + 50 * i];
-      }
-    }
-
-    c_mtimes(y, b_Qvec, b_y);
-    mtimes(A, Q, y);
-    c_mtimes(y, bineq, c_y);
-    for (i = 0; i < 100; i++) {
-      b_y[i] -= c[i] + c_y[i];
-      for (k = 0; k < 100; k++) {
-        SD->f0.b_G[k + 100 * i] = SD->f0.G[i + 100 * k];
-      }
-    }
-
-    b_st.site = &vb_emlrtRSI;
-    mldivide(&b_st, SD->f0.b_G, b_y);
-    b_st.site = &vb_emlrtRSI;
-    mldivide(&b_st, SD->f0.G, b_y);
-    b_st.site = &wb_emlrtRSI;
-    if (mu2 < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&b_st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    a = 1.0 / muDoubleScalarSqrt(mu2);
-    for (k = 0; k < 50; k++) {
-      b_Qvec[k] = muDoubleScalarExp(v[k]);
-    }
-
-    d_mtimes(A, b_y, d_y);
-    for (i = 0; i < 50; i++) {
-      b_Qvec[i] = 1.0 - a * b_Qvec[i] * (d_y[i] + bineq[i]);
-    }
+    st.site = &r_emlrtRSI;
+    solveNewtonStep_decomp(SD, &st, mu2, v, c, A, bineq, SD->f2.Q, Qvec, d2Hat);
 
     /*  Obtain affine representation of d = d0 + k*d1 */
-    mu2 = 1.0 / muDoubleScalarSqrt(mu) - k2;
-    k2 = -k2 / mu2;
+    mu2 = 1.0 / muDoubleScalarSqrt(*mu) - k2;
+    c0 = -k2 / mu2;
     a = 1.0 / mu2;
 
     /*  Solve for muStar using bisection */
-    for (i = 0; i < 50; i++) {
-      xError = b[i];
-      mu2 = b_Qvec[i];
-      c0[i] = k2 * xError + (1.0 - k2) * mu2;
-      d_y[i] = a * (xError - mu2);
+    for (startFlag = 0; startFlag < 120; startFlag++) {
+      mu2 = d1Hat[startFlag];
+      k2 = d2Hat[startFlag];
+      b_c0[startFlag] = c0 * mu2 + (1.0 - c0) * k2;
+      Qvec[startFlag] = a * (mu2 - k2);
     }
 
-    st.site = &t_emlrtRSI;
-    muStarSolve(&st, c0, d_y, mu_f, &mu, d);
-
-    /*  Get xError */
-    st.site = &u_emlrtRSI;
-    if (mu < 0.0) {
-      emlrtErrorWithMessageIdR2018a(&st, &d_emlrtRTEI,
-        "Coder:toolbox:ElFunDomainError", "Coder:toolbox:ElFunDomainError", 3, 4,
-        4, "sqrt");
-    }
-
-    xError = muDoubleScalarSqrt(mu);
-    st.site = &u_emlrtRSI;
-    for (k = 0; k < 50; k++) {
-      mu2 = muDoubleScalarExp(v[k]);
-      b_Qvec[k] = mu2;
-      Qvec[k] = mu2;
-    }
-
-    for (i = 0; i < 5000; i++) {
-      y[i] = xError * y_tmp[i];
-    }
-
-    for (i = 0; i < 50; i++) {
-      c0[i] = b_Qvec[i] + Qvec[i] * d[i];
-    }
-
-    c_mtimes(y, c0, b_y);
-    st.site = &u_emlrtRSI;
-    for (i = 0; i < 100; i++) {
-      b_y[i] -= c[i];
-    }
-
-    e_mtimes(SD->f0.invW, b_y, x);
-    for (i = 0; i < 100; i++) {
-      c_y[i] = x[i] - xStar[i];
-    }
-
-    xError = c_norm(c_y);
-    if (((int32_T)(*numIter + 1.0) < 1) || ((int32_T)(*numIter + 1.0) >
-         xError_vec->size[0])) {
-      emlrtDynamicBoundsCheckR2012b((int32_T)(*numIter + 1.0), 1,
-        xError_vec->size[0], &e_emlrtBCI, sp);
-    }
-
-    xError_vec->data[(int32_T)(*numIter + 1.0) - 1] = xError;
+    st.site = &s_emlrtRSI;
+    muStarSolve(&st, b_c0, Qvec, 1.0, mu_f, mu, d);
 
     /*  Make sure that muStar is finite and catch it if not */
-    if (muDoubleScalarIsInf(mu)) {
-      mu = mu1;
-      memcpy(&d[0], &b[0], 50U * sizeof(real_T));
+    if (muDoubleScalarIsInf(*mu)) {
+      *mu = mu1;
+      memcpy(&d[0], &d1Hat[0], 120U * sizeof(real_T));
     }
 
     /*  Update x, v, d */
-    mu2 = b_norm(d);
-    st.site = &v_emlrtRSI;
+    mu2 = 0.0;
+    for (k = 0; k < 120; k++) {
+      c0 = muDoubleScalarAbs(d[k]);
+      if (muDoubleScalarIsNaN(c0) || (c0 > mu2)) {
+        mu2 = c0;
+      }
+    }
+
+    st.site = &t_emlrtRSI;
     a = muDoubleScalarMin(1.0, 1.0 / (mu2 * mu2));
-    for (i = 0; i < 50; i++) {
-      v[i] += a * d[i];
+    for (startFlag = 0; startFlag < 120; startFlag++) {
+      v[startFlag] += a * d[startFlag];
     }
 
     (*numIter)++;
@@ -1029,30 +716,12 @@ void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
     }
   }
 
-  st.site = &w_emlrtRSI;
+  st.site = &u_emlrtRSI;
   *execTime = toc(&st);
-  if (1.0 > *numIter) {
-    i = 0;
-  } else {
-    if (1 > xError_vec->size[0]) {
-      emlrtDynamicBoundsCheckR2012b(1, 1, xError_vec->size[0], &b_emlrtBCI, sp);
-    }
 
-    if (((int32_T)*numIter < 1) || ((int32_T)*numIter > xError_vec->size[0])) {
-      emlrtDynamicBoundsCheckR2012b((int32_T)*numIter, 1, xError_vec->size[0],
-        &c_emlrtBCI, sp);
-    }
-
-    i = (int32_T)*numIter;
-  }
-
-  iv[0] = 1;
-  iv[1] = i;
-  st.site = &x_emlrtRSI;
-  indexShapeCheck(&st, xError_vec->size[0], iv);
-  k = xError_vec->size[0];
-  xError_vec->size[0] = i;
-  emxEnsureCapacity_real_T(sp, xError_vec, k, &i_emlrtRTEI);
+  /*  Get x  */
+  st.site = &v_emlrtRSI;
+  solveNewtonStep(SD, &st, *mu, v, W, c, A, bineq, x);
 }
 
 /* End of code generation (logInteriorPoint_rt.c) */

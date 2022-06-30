@@ -17,6 +17,6 @@
 #include <string.h>
 
 /* Function Declarations */
-void cholesky(const emlrtStack *sp, real_T A[10000]);
+void cholesky(const emlrtStack *sp, real_T A[14400]);
 
 /* End of code generation (chol.h) */

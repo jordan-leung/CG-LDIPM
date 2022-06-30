@@ -19,7 +19,7 @@
 
 /* Function Declarations */
 void logInteriorPoint_conjgrad_rt_mexFunction(c_logInteriorPoint_conjgrad_rtS
-  *SD, int32_T nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[12]);
+  *SD, int32_T nlhs, mxArray *plhs[5], int32_T nrhs, const mxArray *prhs[11]);
 MEXFUNCTION_LINKAGE void mexFunction(int32_T nlhs, mxArray *plhs[], int32_T nrhs,
   const mxArray *prhs[]);
 emlrtCTX mexFunctionCreateRootTLS(void);

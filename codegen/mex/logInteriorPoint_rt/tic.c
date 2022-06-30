@@ -41,7 +41,7 @@ void tic(const emlrtStack *sp)
   status = emlrtClockGettimeMonotonic(&t);
   d_st.site = &mb_emlrtRSI;
   if (status != 0) {
-    emlrtErrorWithMessageIdR2018a(&d_st, &c_emlrtRTEI,
+    emlrtErrorWithMessageIdR2018a(&d_st, &d_emlrtRTEI,
       "Coder:toolbox:POSIXCallFailed", "Coder:toolbox:POSIXCallFailed", 5, 4, 26,
       "emlrtClockGettimeMonotonic", 12, status);
   }

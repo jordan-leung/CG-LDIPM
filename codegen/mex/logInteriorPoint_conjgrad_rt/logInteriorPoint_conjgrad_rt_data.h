@@ -20,9 +20,9 @@
 extern emlrtCTX emlrtRootTLSGlobal;
 extern const volatile char_T *emlrtBreakCheckR2012bFlagVar;
 extern emlrtContext emlrtContextGlobal;
-extern emlrtRSInfo jb_emlrtRSI;
-extern emlrtRSInfo kb_emlrtRSI;
-extern emlrtRSInfo lb_emlrtRSI;
+extern emlrtRSInfo gb_emlrtRSI;
+extern emlrtRSInfo hb_emlrtRSI;
+extern emlrtRSInfo ib_emlrtRSI;
 extern emlrtRTEInfo c_emlrtRTEI;
 
 /* End of code generation (logInteriorPoint_conjgrad_rt_data.h) */

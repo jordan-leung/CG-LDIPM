@@ -68,13 +68,13 @@ OPTIONS = optimoptions('quadprog');
 OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-10, 'ConstraintTolerance', 1e-10);
 x_QP = quadprog(H,c,A,b,[],[],[],[],[],OPTIONS);
 
-A*x_QP - b
+length(find(abs(A*x_QP - b)<1e-4))
 
 % Run LDIPM with normal settings
 mu_f = 1e-10;
 mu_0 = 1e8;
 maxIter = 500;
-maxCGIter = 10000;
+maxCGIter = 500;
 CGPreCondFlag = 0;
 printFlag = 1;
 v0 = zeros(size(A,1),1);
@@ -100,7 +100,6 @@ v0 = zeros(size(A,1),1);
 %     end
 % end
 % v0 = -log(s_init);
-OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-10, 'ConstraintTolerance', 1e-10);
 % fprintf('------ Running with regular scheme ------ \n')
 % [xReg,lambdaReg,sReg,vReg,~,~,numIterReg,~,~,execTimeReg] = logInteriorPoint(H,c,A,b,[],[],mu_f,mu_0,v0,maxIter,printFlag);
 % 
@@ -111,11 +110,32 @@ OPTIONS = optimoptions(OPTIONS, 'OptimalityTolerance', 1e-10, 'ConstraintToleran
 
 % Diagonal precond
 fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
-[x2,~,~,vStar2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,wsRes2,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1,printFlag);
+CGTol = 1e-8;
+maxCGIter = 500;
+[x2,~,~,v2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,wsRes2,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,printFlag);
+norm(x2-x_QP)
+sum(sum(CGIters2))
 
-if caseFlag == 3
-    [x3,iterCount3,xError3,execTime3] = projGradSolver_rt(H,c,zeros(size(H,1)),xmin,xmax,1000,x_QP,1e-6);
-end
+% % Alternative algorithm precond
+% fprintf('------ Running with CGLDIPM-Alt (diag precond) ------ \n')
+% CGTol = 1e-10;
+% maxCGIter = 1;
+% muStep = 0.9999;
+% maxIter = 10000000;
+% [x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3] = logInteriorPoint_conjgradalt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,muStep,1,printFlag);
+% norm(x3-x_QP)
+% sum(CGIters3)
+
+
+% Alternative algorithm precond
+fprintf('------ Running with CGLDIPM-Alt (mod search) ------ \n')
+[x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4] = logInteriorPoint_conjgrad_modSearch(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,printFlag);
+norm(x4-x_QP)
+sum(CGIters4)
+
+% % No precond
+% fprintf('------ Running with CGLDIPM-Alt (no precond) ------ \n')
+% [x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4] = logInteriorPoint_conjgradalt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,muStep,0,printFlag);
 
 %% Plotting
 close all

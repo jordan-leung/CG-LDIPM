@@ -16,7 +16,7 @@
 
 /* Function Definitions */
 void logInteriorPoint_rt_mexFunction(logInteriorPoint_rtStackData *SD, int32_T
-  nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[10])
+  nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[8])
 {
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
@@ -28,8 +28,8 @@ void logInteriorPoint_rt_mexFunction(logInteriorPoint_rtStackData *SD, int32_T
   st.tls = emlrtRootTLSGlobal;
 
   /* Check for proper number of arguments. */
-  if (nrhs != 10) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 10, 4,
+  if (nrhs != 8) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 8, 4,
                         19, "logInteriorPoint_rt");
   }
 

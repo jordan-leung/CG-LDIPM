@@ -19,6 +19,6 @@
 
 /* Function Declarations */
 void logInteriorPoint_rt_api(logInteriorPoint_rtStackData *SD, const mxArray *
-  const prhs[10], int32_T nlhs, const mxArray *plhs[4]);
+  const prhs[8], int32_T nlhs, const mxArray *plhs[4]);
 
 /* End of code generation (_coder_logInteriorPoint_rt_api.h) */

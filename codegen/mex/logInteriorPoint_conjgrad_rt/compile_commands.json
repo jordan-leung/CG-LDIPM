@@ -97,12 +97,6 @@
   },
   {
     "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_conjgrad_rt",
-    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_conjgrad_rt_mex -c  logInteriorPoint_conjgrad_rt_emxutil.c -o build/glnxa64/logInteriorPoint_conjgrad_rt_emxutil.o",
-    "file": "logInteriorPoint_conjgrad_rt_emxutil.c",
-    "output": "build/glnxa64/logInteriorPoint_conjgrad_rt_emxutil.o"
-  },
-  {
-    "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_conjgrad_rt",
     "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_conjgrad_rt_mex -c  logInteriorPoint_conjgrad_rt_mexutil.c -o build/glnxa64/logInteriorPoint_conjgrad_rt_mexutil.o",
     "file": "logInteriorPoint_conjgrad_rt_mexutil.c",
     "output": "build/glnxa64/logInteriorPoint_conjgrad_rt_mexutil.o"

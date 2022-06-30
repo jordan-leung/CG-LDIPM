@@ -11,7 +11,7 @@ addpath(pathVar);
 % Static variables
 N = 120;
 condTarget = 1e3;
-ratio = 10;
+ratio = 1;
 m = N/ratio;
 A = zeros(m,N);
 for i = 1:m
@@ -40,7 +40,8 @@ b = b_low + (b_high - b_low)*rand(m,1);
 mu_f = 1e-10;
 mu_0 = 1e8;
 maxIter = 100;
-maxCGIter = 10000;
+maxCGIter = 1000;
+CGTol = 1e-2;
 CGPreCondFlag = 0;
 printFlag = 0;
 v0 = zeros(size(A,1),1);
@@ -59,8 +60,8 @@ useMexFlag = 1;
 compileFlag = 1;
 if compileFlag && useMexFlag
     fprintf('----------- Compiling code ---------- \n')
-    codegen logInteriorPoint_rt_mu -args {H,c,A,b,mu_f,mu_0,v0,maxIter}
-    codegen logInteriorPoint_conjgrad_rt_mu -args {H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0}
+    codegen logInteriorPoint_rt -args {H,c,A,b,mu_f,mu_0,v0,maxIter}
+    codegen logInteriorPoint_conjgrad_rt -args {H,c,A,b,mu_f,mu_0,v0,maxIter,CGTol,maxCGIter,0}
 end
 
 %% Run experiment
@@ -98,16 +99,18 @@ while iOuter <= numSample
     workFlag = 1;
     for j = 1:NumAverage
         if useMexFlag
-            [~,xError1,execTime_1,numIter1] = logInteriorPoint_rt_mu_mex(H,c,A,b,mu_f,mu_0,v0,maxIter);
-            [~,xError2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt_mu_mex(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1);
+            [x1,mu1,execTime_1,numIter1] = logInteriorPoint_rt_mex(H,c,A,b,mu_f,mu_0,v0,maxIter);
+            [x2,mu2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt_mex(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1);
         else
-            [~,xError1,execTime_1,numIter1] = logInteriorPoint_rt_mu(H,c,A,b,mu_f,mu_0,v0,maxIter);
-            [~,xError2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt_mu(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,1);
+            [x1,mu1,execTime_1,numIter1] = logInteriorPoint_rt(H,c,A,b,mu_f,mu_0,v0,maxIter);
+            [x2,mu2,execTime_2,numIter2,CGIters_i] = logInteriorPoint_conjgrad_rt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1);
         end
-        if numIter1 < maxIter && numIter2 < maxIter
+        if norm(x1 - xStar) < 1e-6 && norm(x2 - xStar) < 1e-6
             execTimeSum_reg = execTimeSum_reg + execTime_1;
             execTimeSum_cg = execTimeSum_cg + execTime_2;
         else
+            fprintf('Broken at iteration %0.0i \n',iOuter);
+            fprtinf('x1Error = %0.2e, x2Error = %0.2e \n',norm(x1 - xStar),norm(x2 - xStar) );
             workFlag = 0;
             break
         end

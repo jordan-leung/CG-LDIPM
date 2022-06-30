@@ -16,24 +16,24 @@
 
 /* Function Definitions */
 void logInteriorPoint_conjgrad_rt_mexFunction(c_logInteriorPoint_conjgrad_rtS
-  *SD, int32_T nlhs, mxArray *plhs[4], int32_T nrhs, const mxArray *prhs[12])
+  *SD, int32_T nlhs, mxArray *plhs[5], int32_T nrhs, const mxArray *prhs[11])
 {
   emlrtStack st = { NULL,              /* site */
     NULL,                              /* tls */
     NULL                               /* prev */
   };
 
-  const mxArray *outputs[4];
+  const mxArray *outputs[5];
   int32_T b_nlhs;
   st.tls = emlrtRootTLSGlobal;
 
   /* Check for proper number of arguments. */
-  if (nrhs != 12) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 12, 4,
+  if (nrhs != 11) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, 12, 11, 4,
                         28, "logInteriorPoint_conjgrad_rt");
   }
 
-  if (nlhs > 4) {
+  if (nlhs > 5) {
     emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:TooManyOutputArguments", 3, 4, 28,
                         "logInteriorPoint_conjgrad_rt");
   }

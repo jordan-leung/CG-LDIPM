@@ -44,17 +44,14 @@ build $builddir/warning.o : cc $root/warning.c
 build $builddir/tic.o : cc $root/tic.c
 build $builddir/timeKeeper.o : cc $root/timeKeeper.c
 build $builddir/mtimes.o : cc $root/mtimes.c
-build $builddir/norm.o : cc $root/norm.c
 build $builddir/toc.o : cc $root/toc.c
-build $builddir/indexShapeCheck.o : cc $root/indexShapeCheck.c
 build $builddir/_coder_logInteriorPoint_rt_api.o : cc $root/interface/_coder_logInteriorPoint_rt_api.c
 build $builddir/_coder_logInteriorPoint_rt_mex.o : cc $root/interface/_coder_logInteriorPoint_rt_mex.c
 build $builddir/chol.o : cc $root/chol.c
 build $builddir/mldivide.o : cc $root/mldivide.c
-build $builddir/logInteriorPoint_rt_emxutil.o : cc $root/logInteriorPoint_rt_emxutil.c
 build $builddir/logInteriorPoint_rt_mexutil.o : cc $root/logInteriorPoint_rt_mexutil.c
 build $builddir/_coder_logInteriorPoint_rt_info.o : cc $root/interface/_coder_logInteriorPoint_rt_info.c
 build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
 
 # Link
-build $root/logInteriorPoint_rt_mex.mexa64 : link $builddir/logInteriorPoint_rt_data.o $builddir/rt_nonfinite.o $builddir/logInteriorPoint_rt_initialize.o $builddir/logInteriorPoint_rt_terminate.o $builddir/logInteriorPoint_rt.o $builddir/inv.o $builddir/warning.o $builddir/tic.o $builddir/timeKeeper.o $builddir/mtimes.o $builddir/norm.o $builddir/toc.o $builddir/indexShapeCheck.o $builddir/_coder_logInteriorPoint_rt_api.o $builddir/_coder_logInteriorPoint_rt_mex.o $builddir/chol.o $builddir/mldivide.o $builddir/logInteriorPoint_rt_emxutil.o $builddir/logInteriorPoint_rt_mexutil.o $builddir/_coder_logInteriorPoint_rt_info.o $builddir/c_mexapi_version.o 
+build $root/logInteriorPoint_rt_mex.mexa64 : link $builddir/logInteriorPoint_rt_data.o $builddir/rt_nonfinite.o $builddir/logInteriorPoint_rt_initialize.o $builddir/logInteriorPoint_rt_terminate.o $builddir/logInteriorPoint_rt.o $builddir/inv.o $builddir/warning.o $builddir/tic.o $builddir/timeKeeper.o $builddir/mtimes.o $builddir/toc.o $builddir/_coder_logInteriorPoint_rt_api.o $builddir/_coder_logInteriorPoint_rt_mex.o $builddir/chol.o $builddir/mldivide.o $builddir/logInteriorPoint_rt_mexutil.o $builddir/_coder_logInteriorPoint_rt_info.o $builddir/c_mexapi_version.o 

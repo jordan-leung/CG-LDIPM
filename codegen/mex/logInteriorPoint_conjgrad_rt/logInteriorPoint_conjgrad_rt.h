@@ -19,10 +19,9 @@
 
 /* Function Declarations */
 void logInteriorPoint_conjgrad_rt(c_logInteriorPoint_conjgrad_rtS *SD, const
-  emlrtStack *sp, const real_T W[10000], const real_T c[100], real_T Aineq[5000],
-  const real_T bineq[50], real_T mu_f, real_T mu_0, const real_T v0[50], real_T
-  maxIter, real_T maxCGIter, real_T preCondFlag, const real_T xStar[100], real_T
-  xTol, real_T x[100], emxArray_real_T *xError_vec, real_T *execTime, real_T
-  *numIter);
+  emlrtStack *sp, const real_T W[14400], const real_T c[120], real_T Aineq[14400],
+  const real_T bineq[120], real_T mu_f, real_T mu_0, const real_T v0[120],
+  real_T maxIter, real_T maxCGIter, real_T CGTol, real_T preCondFlag, real_T x
+  [120], real_T *mu, real_T *execTime, real_T *numIter, real_T *totalCGIters);
 
 /* End of code generation (logInteriorPoint_conjgrad_rt.h) */

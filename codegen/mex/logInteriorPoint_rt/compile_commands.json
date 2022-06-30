@@ -61,21 +61,9 @@
   },
   {
     "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",
-    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mex -c  norm.c -o build/glnxa64/norm.o",
-    "file": "norm.c",
-    "output": "build/glnxa64/norm.o"
-  },
-  {
-    "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",
     "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mex -c  toc.c -o build/glnxa64/toc.o",
     "file": "toc.c",
     "output": "build/glnxa64/toc.o"
-  },
-  {
-    "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",
-    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mex -c  indexShapeCheck.c -o build/glnxa64/indexShapeCheck.o",
-    "file": "indexShapeCheck.c",
-    "output": "build/glnxa64/indexShapeCheck.o"
   },
   {
     "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",
@@ -100,12 +88,6 @@
     "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mex -c  mldivide.c -o build/glnxa64/mldivide.o",
     "file": "mldivide.c",
     "output": "build/glnxa64/mldivide.o"
-  },
-  {
-    "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",
-    "command": "/usr/bin/gcc -fexceptions -fPIC -fno-omit-frame-pointer -pthread -D_GNU_SOURCE -DMATLAB_MEX_FILE  -O2 -fwrapv -DNDEBUG -std=c99 -I \".\" -I \"/home/jordanleung/Documents/GitHub/CG-LDIPM\" -I \"./interface\" -I \"/home/jordanleung/MATLAB2020b/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=logInteriorPoint_rt_mex -c  logInteriorPoint_rt_emxutil.c -o build/glnxa64/logInteriorPoint_rt_emxutil.o",
-    "file": "logInteriorPoint_rt_emxutil.c",
-    "output": "build/glnxa64/logInteriorPoint_rt_emxutil.o"
   },
   {
     "directory": "/home/jordanleung/Documents/GitHub/CG-LDIPM/codegen/mex/logInteriorPoint_rt",

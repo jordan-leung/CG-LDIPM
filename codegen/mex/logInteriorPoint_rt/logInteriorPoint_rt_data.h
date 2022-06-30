@@ -23,9 +23,9 @@ extern emlrtContext emlrtContextGlobal;
 extern emlrtRSInfo kb_emlrtRSI;
 extern emlrtRSInfo lb_emlrtRSI;
 extern emlrtRSInfo mb_emlrtRSI;
-extern emlrtRTEInfo emlrtRTEI;
 extern emlrtRTEInfo b_emlrtRTEI;
 extern emlrtRTEInfo c_emlrtRTEI;
+extern emlrtRTEInfo d_emlrtRTEI;
 extern const char_T cv[19];
 
 /* End of code generation (logInteriorPoint_rt_data.h) */

@@ -19,9 +19,8 @@
 
 /* Function Declarations */
 void logInteriorPoint_rt(logInteriorPoint_rtStackData *SD, const emlrtStack *sp,
-  const real_T W[10000], const real_T c[100], real_T A[5000], const real_T
-  bineq[50], real_T mu_f, real_T mu_0, const real_T v0[50], real_T maxIter,
-  const real_T xStar[100], real_T xTol, real_T x[100], emxArray_real_T
-  *xError_vec, real_T *execTime, real_T *numIter);
+  const real_T W[14400], const real_T c[120], real_T A[14400], const real_T
+  bineq[120], real_T mu_f, real_T mu_0, const real_T v0[120], real_T maxIter,
+  real_T x[120], real_T *mu, real_T *execTime, real_T *numIter);
 
 /* End of code generation (logInteriorPoint_rt.h) */

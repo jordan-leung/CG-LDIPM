@@ -19,6 +19,6 @@
 
 /* Function Declarations */
 void d_logInteriorPoint_conjgrad_rt_(c_logInteriorPoint_conjgrad_rtS *SD, const
-  mxArray * const prhs[12], int32_T nlhs, const mxArray *plhs[4]);
+  mxArray * const prhs[11], int32_T nlhs, const mxArray *plhs[5]);
 
 /* End of code generation (_coder_logInteriorPoint_conjgrad_rt_api.h) */
