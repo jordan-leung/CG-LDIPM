@@ -73,8 +73,9 @@ length(find(abs(A*x_QP - b)<1e-4))
 % Run LDIPM with normal settings
 mu_f = 1e-10;
 mu_0 = 1e8;
-maxIter = 500;
-maxCGIter = 500;
+maxIter = 5000;
+maxCGIter = 1000;
+CGTol = 1e-8;
 CGPreCondFlag = 0;
 printFlag = 1;
 v0 = zeros(size(A,1),1);
@@ -90,7 +91,7 @@ v0 = zeros(size(A,1),1);
 %    elseif xProj(i) < xmin(i)
 %        xProj(i) = xmin(i);
 %    end
-% end
+
 % 
 % % Calculate slack
 % s_init = A*xProj + b;
@@ -105,13 +106,11 @@ v0 = zeros(size(A,1),1);
 % 
 % % Diagonal noPrecond
 % fprintf('------ Running with CGLDIPM (no precond) ------ \n')
-% [x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,wsRes,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
+% [x,~,~,vStar,muStar,~,numIter,~,~,execTime,CGIters,CGres,wsRes,CGerror] = logInterior')Point_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,0,printFlag);
 
 
 % Diagonal precond
 fprintf('------ Running with CGLDIPM (diag precond) ------ \n')
-CGTol = 1e-8;
-maxCGIter = 500;
 [x2,~,~,v2,muStar2,~,numIter2,~,~,execTime2,CGIters2,CGres2,wsRes2,CGerror] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,printFlag);
 norm(x2-x_QP)
 sum(sum(CGIters2))
@@ -119,19 +118,25 @@ sum(sum(CGIters2))
 % % Alternative algorithm precond
 % fprintf('------ Running with CGLDIPM-Alt (diag precond) ------ \n')
 % CGTol = 1e-10;
-% maxCGIter = 1;
-% muStep = 0.9999;
+% maxCGIter = 50;
+% muStep = 0.99;
 % maxIter = 10000000;
 % [x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3] = logInteriorPoint_conjgradalt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,muStep,1,printFlag);
 % norm(x3-x_QP)
 % sum(CGIters3)
 
-
 % Alternative algorithm precond
-fprintf('------ Running with CGLDIPM-Alt (mod search) ------ \n')
-[x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4] = logInteriorPoint_conjgrad_modSearch(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,printFlag);
-norm(x4-x_QP)
-sum(CGIters4)
+fprintf('------ Running with CGLDIPM-Alt (diag precond) ------ \n')
+muStep = 0.25;
+[x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3] = logInteriorPoint_conjgradalt_cgBound(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,muStep,1,printFlag);
+norm(x3-x_QP)
+sum(CGIters3)
+
+% % Alternative algorithm precond
+% fprintf('------ Running with CGLDIPM-Alt (mod search) ------ \n')
+% [x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4] = logInteriorPoint_conjgrad_modSearch(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,printFlag);
+% norm(x4-x_QP)
+% sum(CGIters4)
 
 % % No precond
 % fprintf('------ Running with CGLDIPM-Alt (no precond) ------ \n')
@@ -139,6 +144,7 @@ sum(CGIters4)
 
 %% Plotting
 close all
+semilogy(CGres3)
 
 % % Warm-start comparison plot
 % figure
