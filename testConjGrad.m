@@ -2,7 +2,6 @@ clc
 clear all
 close all
 
-N = 500;
 
 % % Generate random parameters and save
 % P = RandOrthMat(N);
@@ -37,16 +36,43 @@ N = 500;
 % A = eye(N) + GMatrix;
 
 
+% Static variables
+N = 500;
+condTarget = 1e3;
+m = N;
+b_low = -1;
+b_high = 1;
 
-x = A\b;
-[x1,numIter1,resStar1] = conjGrad(A,b,x0,maxIter,tol);
-     
+% Changing Variables
+hh= 2*rand(N,N)-1 + 2*rand(N,N)-1;
+hh = hh*hh';              % symmetric with random entries beween -2 and 2
+[u, s, v] = svd(hh);
+s = diag(s);           % s is vector
+s = s(1)*( 1-((condTarget-1)/condTarget)*(s(1)-s)/(s(1)-s(end))) ;
+s = diag(s);           % back to matrix
+H = u*s*v';
+H = 1/2*(H' + H);
+b = b_low + (b_high - b_low)*rand(m,1);
+x0 = b*0;
+maxIter = 5*N;
+tol = 1e-10;
+[x1,numIter1,resStar1] = conjGrad(H,b,x0,maxIter,tol);
+norm(x1 - H\b) 
+
+% A = magic(5);
+% b = rand(5,1);
+% x0 = b*0;
+% maxIter = 50;
+% tol = 1e-10;
+% [x1,numIter1,resStar1] = conjGrad(A,b,x0,maxIter,tol);
+% norm(x1 - A\b) 
+
        
 % [x2,numIter2,resStar2] = conjGrad_preCond(A,b,x0,200,tol,2,G);
 % 
 % [x3,numIter3,resStar3] = conjGrad_preCond(A,b,x0,200,tol,1);
 
-
-numIter1
-numIter2
-numIter3
+% 
+% numIter1
+% numIter2
+% numIter3

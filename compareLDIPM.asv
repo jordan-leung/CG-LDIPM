@@ -149,7 +149,7 @@ end
 
 % Given parameters (delta,epsilon), deteremine the shortstep parameters (N,k)
 m = size(A,1);
-delta = .33; % delta in (0,1/2)
+delta = .45; % delta in (0,1/2)
 epsilon = delta; % epsilon in (0,invq(delta)), invq(x) and x intersect at like 0.9 so this is always valid
 zeta = acosh(delta/2 + 1) - epsilon;
 if epsilon == delta
@@ -297,7 +297,7 @@ legend('$f(0)+\|d\|^2$','-f''(0)','-f''(0) after 1 CG iteration','interpreter','
 
 figure
 set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-plot(divHist(ind:end),-fPrimeBound(ind:end))
+semilog(divHist(ind:end),-fPrimeBound(ind:end))
 hold on; box on; grid on
 plot(divHist(ind:end),fPrime(ind:end),'linewidth',2)
 plot(divHist(ind:end),fPrimeInit(ind:end),'linewidth',2)
