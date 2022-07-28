@@ -1,4 +1,4 @@
-function [x,v,mu,execTime,numIter,CGIters,CGres,dHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
+function [x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 % Get size variabl,es
 m = size(Aineq,1);
@@ -32,6 +32,7 @@ numIter = 0; % number of newton iterations performed
 % Initialize things
 CGIters = zeros(maxIter,1);
 CGres = zeros(maxIter,1);
+CGerror = zeros(maxIter,1);
 dHist = zeros(maxIter,1);
 
 % Given parameters (delta,epsilon), deteremine the shortstep parameters (N,k)
@@ -48,9 +49,15 @@ v = v0;
 mu = mu_0;
 d = zeros(m,1);
 while dNorm > 1e-8
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol);
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
+    
+    % For calculating error
+    MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+    f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+    dOpt = MTemp\f;
+    e_i = norm(d - dOpt,2);
     
     % Update x, v, d
     alpha = min(1, 1/(dNorm^2));
@@ -60,6 +67,7 @@ while dNorm > 1e-8
     % Store
     CGIters(numIter) = CGIter_i;
     CGres(numIter) = res;
+    CGerror(numIter) = e_i;
     dHist(numIter) = dNorm;
 end
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
@@ -70,8 +78,14 @@ while mu > mu_f
     % Run N inner-loop iterations
     for j = 1:N_ls
         % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol);
+        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol);
         
+        % For calculating error
+        MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+        f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+        dOpt = MTemp\f;
+        e_i = norm(d - dOpt,2);
+    
         % Update x, v, d
         dNorm = norm(d,'inf');
         vPrev = v;
@@ -83,6 +97,7 @@ while mu > mu_f
         numIter = numIter + 1;
         CGIters(numIter) = CGIter_i;
         CGres(numIter) = res;
+        CGerror(numIter) = e_i;
         dHist(numIter) = dNorm;
     end
 end
@@ -91,6 +106,7 @@ v = vPrev;
 x = invW*(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c);
 CGIters = CGIters(1:numIter);
 CGres = CGres(1:numIter);
+CGerror = CGerror(1:numIter);
 dHist = dHist(1:numIter);
 end
 
@@ -205,12 +221,13 @@ end
 
 function flag = checkTruncCriteria(eNorm,dNorm,params)
 % Returns 1 if the CG truncation criteria is satisifed 
-beta = params.beta;
 delta = params.delta;
+gamma = delta/2 + sqrt(delta^2/4 + delta);
 
 % Compute upper and lower bounds of h
-h_ub = (dNorm + eNorm)^2/(1 - dNorm - eNorm);
-h_lb = (dNorm - eNorm)^2/(1 + dNorm + eNorm);
+d_ub = min([dNorm + eNorm, gamma]);
+h_ub = min([(d_ub)^2/(1 - dNorm - eNorm), delta]);
+h_lb = (dNorm - eNorm)^2/(1 + d_ub);
 
 % Compute the complicated LHS and RHS for the 3 bigger inequalities
 LHS_delta = delta/2 + eNorm + sqrt(delta^2/4 + 2*delta*eNorm + delta);

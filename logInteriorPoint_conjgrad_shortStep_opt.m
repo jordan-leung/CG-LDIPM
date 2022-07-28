@@ -1,4 +1,4 @@
-function [x,v,mu,execTime,numIter,CGIters,CGres,dHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
+function [x,v,muHist,execTime,numIter,CGIters,CGres,CGerror,dHist,dDiffHist,dInitHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh,wsFlag)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 % Get size variabl,es
 m = size(Aineq,1);
@@ -32,7 +32,11 @@ numIter = 0; % number of newton iterations performed
 % Initialize things
 CGIters = zeros(maxIter,1);
 CGres = zeros(maxIter,1);
+CGerror = zeros(maxIter,1);
 dHist = zeros(maxIter,1);
+dDiffHist = zeros(maxIter,1); 
+dInitHist = zeros(maxIter,1); 
+muHist = zeros(maxIter,1); 
 
 % Given parameters (delta,epsilon), deteremine the shortstep parameters (N,k)
 N_ls = params.N;
@@ -49,9 +53,20 @@ mu = mu_0;
 muPrev = mu;
 d = zeros(m,1);
 while dNorm > 1e-8
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol);
+    if wsFlag 
+        dInit = d;
+    else
+        dInit = d*0;
+    end
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,dInit,preCondFlag,maxCGIter,CGTol);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
+    
+    % For calculating error
+    MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+    f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+    dOpt = MTemp\f;
+    e_i = norm(d - dOpt,2);
     
     % Update x, v, d
     alpha = min(1, 1/(dNorm^2));
@@ -61,16 +76,32 @@ while dNorm > 1e-8
     % Store
     CGIters(numIter) = CGIter_i;
     CGres(numIter) = res;
-    dHist(numIter) = dNorm;
+    CGerror(numIter) = e_i;
+    dHist(numIter) = norm(d,2);
+    dDiffHist(numIter) = Inf;
+    dInitHist(numIter) = norm(dInit - dOpt,2);
+    muHist(numIter) = mu;
 end
 
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
+dPrev = d;
 while muPrev > mu_f
     % Run N inner-loop iterations
     for j = 1:N_ls
         % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol);
+        if wsFlag
+            dInit = d;
+        else
+            dInit = d*0;
+        end
+        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,dInit,preCondFlag,maxCGIter,CGTol);
         
+        % For calculating error
+        MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+        f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+        dOpt = MTemp\f;
+        e_i = norm(d - dOpt,2);
+
         % Update x, v, d
         vPrev = v;
         alpha = min(1, 1/(dNorm^2));
@@ -82,7 +113,12 @@ while muPrev > mu_f
         numIter = numIter + 1;
         CGIters(numIter) = CGIter_i;
         CGres(numIter) = res;
-        dHist(numIter) = dNorm;
+        CGerror(numIter) = e_i;
+        dHist(numIter) = norm(d,2);;
+        dDiffHist(numIter) = norm(d - dPrev,2);
+        dInitHist(numIter) = norm(dInit - dOpt,2);
+        muHist(numIter) = mu;
+        dPrev = d;
     end
     
     % Increment mu
@@ -95,7 +131,11 @@ v = vPrev;
 x = invW*(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c);
 CGIters = CGIters(1:numIter);
 CGres = CGres(1:numIter);
+CGerror = CGerror(1:numIter);
 dHist = dHist(1:numIter);
+dDiffHist = dDiffHist(1:numIter);
+dInitHist = dInitHist(1:numIter);
+muHist = muHist(1:numIter);
 end
 
 

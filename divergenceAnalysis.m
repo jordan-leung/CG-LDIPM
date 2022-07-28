@@ -1,4 +1,4 @@
-function [x,v,mu,execTime,numIter,CGIters,CGres,dHist,divHist,decreaseIters] = logInteriorPoint_conjgrad_calcDivergence(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
+function [fHist,dHist,fPrimeHist,fPrimeInitHist,CGIters,CGIters_thresh,CGIters_decrease] = divergenceAnalysis(W,c,Aineq,bineq,mu,v0,CGTol,preCondFlag,vThresh,vNumThresh,numSamples)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 % Get size variabl,es
 m = size(Aineq,1);
@@ -25,101 +25,62 @@ for i = 1:m
     GDiag(i) = a_i*invWTimes(a_i',const);
 end
 const.GDiag = GDiag;
-
-numIter = 0; % number of newton iterations performed
-N_ls = params.N;
-k_ls = params.k;
-
-% Initialize things
-CGIters = zeros(maxIter,1);
-CGres = zeros(maxIter,1);
-dHist = zeros(maxIter,1);
-divHist = zeros(maxIter,1);
-decreaseIters = zeros(maxIter,1);
-fPrimeHist = zeros(maxIter,1);
-fPrimeInitHist = zeros(maxIter,1);
 const.vThresh = vThresh;
 const.vNumThresh = vNumThresh;
 
-tic
+
+% Initialize things
+dHist = zeros(numSamples,1);
+fHist = zeros(numSamples,1);
+fPrimeHist = zeros(numSamples,1);
+fPrimeInitHist = zeros(numSamples,1);
+CGIters = zeros(numSamples,1);
+CGIters_thresh = zeros(numSamples,1);
+CGIters_decrease = zeros(numSamples,1);
+
 % --------------------- INITAL CENTERING PROCEDURE ---------------------
 dNorm = 1;
 v = v0;
-mu = mu_0;
 d = zeros(m,1);
-while dNorm > 1e-8
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,[]);
+while dNorm > 1e-10
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,1e8,CGTol,[]);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
     
     % Update x, v, d
     alpha = min(1, 1/(dNorm^2));
     v = v + alpha*d;
-    numIter = numIter + 1;
+end
+
+
+% --------------------- MAIN SAMPLING LOOP ---------------------
+vHat = v;
+sig_max = 5*norm(vHat,2);
+sig_min = 1e-4*norm(vHat,2);
+for i = 1:numSamples
+    % Generate random vector to perturb v
+    sig_i = sig_min * (sig_max-sig_min)*rand(1,1);
+    v = vHat + normrnd(zeros(m,1),sig_i*ones(m,1));
+
+    % Calculate Newton vector
+    [d,CGIter_i,res,theshIter_i,decreaseIter_i,fPrimeInit_i] = solveNewtonStep(mu,v,const,d*0,preCondFlag,1e8,CGTol,vHat);
+    
+    % Calculate divergence
+    h_i = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*m;
+    fPrime_i = (exp(v - vHat) - exp(vHat - v))'*d;
+    dNorm = norm(d,2);
     
     % Store
-    CGIters(numIter) = CGIter_i;
-    CGres(numIter) = res;
-    dHist(numIter) = dNorm;
-    decreaseIters(numIter) = Inf;
+    fHist(i) = h_i;
+    dHist(i) = dNorm;
+    fPrimeHist(i) = fPrime_i;
+    fPrimeInitHist(i) = fPrimeInit_i;    
+    CGIters(i) = CGIter_i;
+    CGIters_thresh(i) = theshIter_i;
+    CGIters_decrease(i) = decreaseIter_i;
 end
-% --------------------- MAIN NEWTON ITERATION LOOP ---------------------
-while mu > mu_f
-    % Perturb mu
-    mu = (1/k_ls)*mu;
-
-    % Run to get centered point so we can cheat and use the divergence
-    % explicitly
-    vHat = v;
-    while dNorm > 1e-10
-        % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,vHat,const,d*0,preCondFlag,maxCGIter,CGTol,[]);
-        
-        % Update x, v, d
-        dNorm = norm(d,'inf');
-        alpha = min(1, 1/(dNorm^2));
-        vHat = vHat + alpha*d;
-    end
-    
-    
-    % Run inner-loop iterations until the divergence condition is
-    % satisfied. Run outer-loop iterations until ||d|| < dSize (e.g. 0.5)
-    d = d*0;
-    dNorm = 1;
-    for j = 1:N_ls
-        % Run the Newton system.
-        [d,CGIter_i,res,decreaseIter_i,fPrimeInit_i] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,vHat);
-        
-        % Calculate divergence and the gradient
-        h_i = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*m; 
-        
-        fPrime_i = (exp(v - vHat) - exp(vHat - v))'*d;
-
-        
-
-        % Update x, v, d
-        dNorm = norm(d,'inf');
-        alpha = min(1, 1/(dNorm^2));
-        v = v + alpha*d;
-        fprintf('mu = %0.2e, d = %0.4f \n',mu,dNorm)
-                
-        % Store
-        numIter = numIter + 1;
-        CGIters(numIter) = CGIter_i;
-        CGres(numIter) = res;
-        dHist(numIter) = dNorm;
-        decreaseIters(numIter) = decreaseIter_i;
-        divHist(numIter) = h_i;
-    end
 end
-execTime = toc;
-x = invW*(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c);
-CGIters = CGIters(1:numIter);
-CGres = CGres(1:numIter);
-dHist = dHist(1:numIter);
-decreaseIters = decreaseIters(1:numIter);
-divHist = divHist(1:numIter);
-end
+
 
 
 % This is a placeholder function for when we eventually use Riccatti
@@ -137,7 +98,7 @@ zOut = zIn + D.*(A*( invWTimes(A'*(D.*zIn),const)));
 end
 
 
-function [d,numIter,res,numIter_decrease,fPrimeInit] = solveNewtonStep(mu,v,const,d0,preCondFlag,maxIter,tol,vHat)
+function [d,numIter,res,numIter_thresh,numIter_decrease,fPrimeInit] = solveNewtonStep(mu,v,const,d0,preCondFlag,maxIter,tol,vHat)
 % W = const.W;
 % invW = const.invW;
 c = const.c;
@@ -148,6 +109,7 @@ GDiag = const.GDiag;
 
 % Flag for whether or not we use the divergence criteria
 checkDiv = ~isempty(vHat);
+numIter_thresh = 0;
 numIter_decrease = 0; % assign for cases where we don't use this
 fPrimeInit = 0;
 
@@ -204,25 +166,36 @@ res = norm(r,2);
 numIter = 1;
 
 % Calculate initial fPrime
-fPrimeInit = (exp(v - vHat) - exp(vHat - v))'*x;
+if checkDiv
+    fPrimeInit = (exp(v - vHat) - exp(vHat - v))'*x;
+end
 
 % Iterate... 
-truncFlag = 0;
-decreaseFlagFlag = 0;
+truncFlag_flag = 0;
+decreaseFlag_flag = 0;
 % Check truncation criterion
 if checkDiv
     [truncFlag,decreaseFlag] = checkTruncCriteria(x,v,vHat); % note that x = d (candidate) here
     
-    % Also, output the first iteration that the gradient is made
-    % negative
-    if ~decreaseFlagFlag
+    % Check if the "thresh" condition has been met
+    if ~truncFlag_flag
+        if truncFlag == 1
+            numIter_thresh = numIter;
+            truncFlag_flag = 1;
+        end
+    end
+    
+    % Check if f'(0) has been met
+    if ~decreaseFlag_flag
         if decreaseFlag == 1
             numIter_decrease = numIter;
-            decreaseFlagFlag = 1;
+            decreaseFlag_flag = 1;
         end
     end
 end
-while numIter  <= maxIter && res > tol && truncFlag == 0
+
+
+while numIter  <= maxIter && res > tol % go until the tolerance is hit, but check for indices
     zPrev = z;
     if applyPreCond
         z = r./MTilde;
@@ -247,18 +220,24 @@ while numIter  <= maxIter && res > tol && truncFlag == 0
     if checkDiv
         [truncFlag,decreaseFlag] = checkTruncCriteria(x,v,vHat); % note that x = d (candidate) here
         
-        % Also, output the first iteration that the gradient is made
-        % negative
-        if ~decreaseFlagFlag
+        % Check if the "thresh" condition has been met
+        if ~truncFlag_flag
+            if truncFlag == 1
+                numIter_thresh = numIter;
+                truncFlag_flag = 1;
+            end
+        end
+        
+        % Check if f'(0) has been met
+        if ~decreaseFlag_flag
             if decreaseFlag == 1
                 numIter_decrease = numIter;
-                decreaseFlagFlag = 1;
+                decreaseFlag_flag = 1;
             end
         end
     end
 end
 d = x;
-
 end
 
 function [flag,flag2] = checkTruncCriteria(d,v,vHat)

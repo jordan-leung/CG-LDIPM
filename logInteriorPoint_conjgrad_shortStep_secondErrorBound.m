@@ -1,4 +1,4 @@
-function [x,v,mu,execTime,numIter,CGIters,CGres,dHist,divHist,decreaseIters] = logInteriorPoint_conjgrad_calcDivergence(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
+function [x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 % Get size variabl,es
 m = size(Aineq,1);
@@ -26,16 +26,19 @@ for i = 1:m
 end
 const.GDiag = GDiag;
 
+% Max amount of bisection iterations
 numIter = 0; % number of newton iterations performed
-N_ls = params.N;
-k_ls = params.k;
 
 % Initialize things
 CGIters = zeros(maxIter,1);
 CGres = zeros(maxIter,1);
+CGerror = zeros(maxIter,1);
 dHist = zeros(maxIter,1);
-divHist = zeros(maxIter,1);
-decreaseIters = zeros(maxIter,1);
+
+% Given parameters (delta,epsilon), deteremine the shortstep parameters (N,k)
+N_ls = params.N;
+k_ls = params.k;
+const.params = params;
 const.vThresh = vThresh;
 const.vNumThresh = vNumThresh;
 
@@ -46,9 +49,16 @@ v = v0;
 mu = mu_0;
 d = zeros(m,1);
 while dNorm > 1e-8
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,[]);
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,params);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
+    
+    % For calculating error
+    MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+    f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+    dOpt = MTemp\f;
+    e_i = norm(d - dOpt,2);
+        
     
     % Update x, v, d
     alpha = min(1, 1/(dNorm^2));
@@ -58,61 +68,47 @@ while dNorm > 1e-8
     % Store
     CGIters(numIter) = CGIter_i;
     CGres(numIter) = res;
+    CGerror(numIter) = e_i;
     dHist(numIter) = dNorm;
-    decreaseIters(numIter) = Inf;
 end
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
 while mu > mu_f
     % Perturb mu
     mu = (1/k_ls)*mu;
 
-    % Run to get centered point so we can cheat and use the divergence
-    % explicitly
-    vHat = v;
-    while dNorm > 1e-10
-        % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,vHat,const,d*0,preCondFlag,maxCGIter,CGTol,[]);
-        
-        % Update x, v, d
-        dNorm = norm(d,'inf');
-        alpha = min(1, 1/(dNorm^2));
-        vHat = vHat + alpha*d;
-    end
-    
-    
-    % Run inner-loop iterations until the divergence condition is
-    % satisfied. Run outer-loop iterations until ||d|| < dSize (e.g. 0.5)
-    d = d*0;
-    dNorm = 1;
+    % Run N inner-loop iterations
     for j = 1:N_ls
         % Run the Newton system.
-        [d,CGIter_i,res,decreaseIter_i] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,vHat);
+        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,params);
         
-        % Calculate divergence
-        h_i = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*m; 
-
+        % For calculating error
+        MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
+        f = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*invWTimes(sqrt(mu)*A'*exp(v) - c,const) + bineq);
+        dOpt = MTemp\f;
+        e_i = norm(d - dOpt,2);
+        
         % Update x, v, d
         dNorm = norm(d,'inf');
+        vPrev = v;
         alpha = min(1, 1/(dNorm^2));
         v = v + alpha*d;
         fprintf('mu = %0.2e, d = %0.4f \n',mu,dNorm)
-                
+        
         % Store
         numIter = numIter + 1;
         CGIters(numIter) = CGIter_i;
         CGres(numIter) = res;
+        CGerror(numIter) = e_i;
         dHist(numIter) = dNorm;
-        decreaseIters(numIter) = decreaseIter_i;
-        divHist(numIter) = h_i;
     end
 end
 execTime = toc;
+v = vPrev;
 x = invW*(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c);
 CGIters = CGIters(1:numIter);
 CGres = CGres(1:numIter);
+CGerror = CGerror(1:numIter);
 dHist = dHist(1:numIter);
-decreaseIters = decreaseIters(1:numIter);
-divHist = divHist(1:numIter);
 end
 
 
@@ -131,7 +127,7 @@ zOut = zIn + D.*(A*( invWTimes(A'*(D.*zIn),const)));
 end
 
 
-function [d,numIter,res,fPrime] = solveNewtonStep(mu,v,const,d0,preCondFlag,maxIter,tol,vHat)
+function [d,numIter,res] = solveNewtonStep(mu,v,const,d0,preCondFlag,maxIter,tol,params)
 % W = const.W;
 % invW = const.invW;
 c = const.c;
@@ -139,9 +135,6 @@ ACon = const.A;
 bCon = const.b;
 m = size(ACon,1);
 GDiag = const.GDiag;
-
-% Flag for whether or not we use the divergence criteria
-checkDiv = ~isempty(vHat);
 
 % Define the preconditioner MTilde
 MTilde = ones(m,1) + exp(v).*GDiag.*exp(v);
@@ -174,6 +167,7 @@ end
 x = d0; % correct at the end by d = x + d0
 Md0 = MTimes(d0,v,const);
 b = f - Md0;
+fNorm = norm(f,2);
 
 % Run the first iteration of CG and iniialize iteration variables
 r = b;
@@ -186,7 +180,8 @@ else
 end
 p = z;
 w = MTimes(p,v,const);
-alpha = r'*z/(p'*w);
+pNorm = (p'*w);
+alpha = r'*z/pNorm;
 
 % Update x and r
 x = x + alpha*p; 
@@ -195,13 +190,15 @@ r = r - alpha*w; % r1
 res = norm(r,2);
 numIter = 1;
 
+% Keep a running calculation of d_MNorm 
+d_MNorm = alpha^2*pNorm; % this is reealy d_MNorm^2
+gamma = params.gamma;
+eBound = min(res, sqrt(gamma*fNorm - d_MNorm));
+
+
 % Iterate... 
-truncFlag = 0;
-% Check truncation criterion
-if checkDiv
-    [truncFlag,fPrime] = checkTruncCriteria(x,v,vHat); % note that x = d (candidate) here
-end
-while numIter  <= maxIter && res > tol && truncFlag == 0
+dNorm = norm(x);
+while numIter  <= maxIter && res > tol && ~(checkTruncCriteria(eBound,dNorm,const.params))
     zPrev = z;
     if applyPreCond
         z = r./MTilde;
@@ -211,7 +208,9 @@ while numIter  <= maxIter && res > tol && truncFlag == 0
     beta = r'*z/(rPrev'*zPrev);
     p = z + beta*p;
     w = MTimes(p,v,const);
-    alpha = r'*z/(p'*w);
+    pNorm = (p'*w);
+    alpha = r'*z/pNorm;
+    d_MNorm = d_MNorm + alpha^2*pNorm;
     
     % Update x
     x = x + alpha*p;
@@ -219,27 +218,36 @@ while numIter  <= maxIter && res > tol && truncFlag == 0
     r = r - alpha*w;
     res = norm(r,2);
 
+    % Update the dNorm
+    dNorm = norm(x);
+    eBound = min(res, sqrt(gamma*fNorm^2 - d_MNorm));
+
     % i++
     numIter = numIter + 1;
-    
-    % Check truncation criterion
-    if checkDiv
-        [truncFlag,fPrime] = checkTruncCriteria(x,v,vHat); % note that x = d (candidate) here
-    end
 end
 d = x;
 
 end
 
-function [flag,fPrime] = checkTruncCriteria(d,v,vHat)
+function flag = checkTruncCriteria(eNorm,dNorm,params)
 % Returns 1 if the CG truncation criteria is satisifed 
-f = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*length(v);
-fPrime = (exp(v - vHat) - exp(vHat - v))'*d;
-if fPrime < -f - norm(d,2)^2
-    flag = 1;
-else
+delta = params.delta;
+gamma = params.gamma;
+
+% Compute upper and lower bounds of h
+d_ub = min([dNorm + eNorm, gamma]);
+h_ub = min([(d_ub)^2/(1 - dNorm - eNorm), delta]);
+h_lb = (dNorm - eNorm)^2/(1 + d_ub);
+
+% Compute the complicated LHS and RHS for the 3 bigger inequalities
+LHS_delta = delta/2 + eNorm + sqrt(delta^2/4 + 2*delta*eNorm + delta);
+rho = (2*dNorm + sqrt(h_ub^2 + 4*h_ub))*eNorm + eNorm^2;
+LHS_quad = rho + h_ub*dNorm*eNorm;
+RHS_quad = 0.5*(1 - dNorm - eNorm)*h_lb^2;
+
+if eNorm > dNorm || eNorm > 1 - dNorm || LHS_delta > 1 || LHS_quad > RHS_quad
     flag = 0;
+else
+    flag = 1;
 end
-
-
 end

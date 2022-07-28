@@ -94,8 +94,6 @@ while mu > mu_f
         h_i = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*m; 
         fPrime_i = (exp(v - vHat) - exp(vHat - v))'*d;
 
-        
-
         % Update x, v, d
         dNorm = norm(d,'inf');
         alpha = min(1, 1/(dNorm^2));

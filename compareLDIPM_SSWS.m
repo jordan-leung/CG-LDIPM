@@ -104,22 +104,21 @@ const.params = params;
 
 % Shortstep_optimal - no WS
 fprintf('------ Running with CGLDIPM-Shortstep (Optimal)  ------ \n')
-[x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist,dDiffHist,dInitHist] = logInteriorPoint_conjgrad_shortStep_opt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
+[x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist,dDiffHist,dInitHist] = logInteriorPoint_conjgrad_shortStep_opt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,0);
+
+
+% Shortstep_optimal - no WS
+fprintf('------ Running with CGLDIPM-Shortstep (Optimal)  ------ \n')
+[x1,v1,mu1,execTime1,numIter1,CGIters1,CGres1,CGerror1,dHist1,dDiffHist1,dInitHist1] = logInteriorPoint_conjgrad_shortStep_opt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
 
  % Regular
 fprintf('------ Running with CGLDIPM-Shortstep  ------ \n')
-[x2,v2,mu2,execTime2,numIter2,CGIters2,CGres2,CGerror2,dHist2] = logInteriorPoint_conjgrad_shortStep(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
+[x2,v2,mu2,execTime2,numIter2,CGIters2,CGres2,CGerror2,dHist2,dDiffHist2,dInitHist2] = logInteriorPoint_conjgrad_shortStep(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,0);
 
-% Regular criterion but with explicit error
-fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
-[x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3,CGerror3,dHist3] = logInteriorPoint_conjgrad_shortStep_calcError(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
+ % Regular
+fprintf('------ Running with CGLDIPM-Shortstep  ------ \n')
+[x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3,CGerror3,dHist3,dDiffHist3,dInitHist3] = logInteriorPoint_conjgrad_shortStep(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
 
-
-
-% fixed = sum(CGIters)
-% early = sum(CGIters2)
-% errorbased = sum(CGIters3)
-% divbased = sum(CGIters4)
 
 %% Plotting
 close all
@@ -131,22 +130,24 @@ figure
 set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
 h1 = plot(CGIters,'linewidth',2);
 grid on; box on; hold on;
-h2 = plot(CGIters2,'linewidth',2);
-h3 = plot(CGIters3,'linewidth',2);
+h2 = plot(CGIters1,'linewidth',2);
+h3 = plot(CGIters2,'linewidth',2);
+h4 = plot(CGIters3,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Iterations','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','interpreter','latex','fontsize',12,'location','best')
+legend('Fixed Trunc, CS','Fixed Trunc, WS','Early Trunc, CS','Early Trunc, WS','interpreter','latex','fontsize',12,'location','best')
 ylim([1 Inf])
 
 figure
 set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
 semilogy(CGres,'linewidth',2)
 grid on; box on; hold on;
+semilogy(CGres1,'linewidth',2);
 semilogy(CGres2,'linewidth',2);
 semilogy(CGres3,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Residual','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','interpreter','latex','fontsize',12,'location','best')
+legend('Fixed Trunc, CS','Fixed Trunc, WS','Early Trunc, CS','Early Trunc, WS','interpreter','latex','fontsize',12,'location','best')
 ylim([1e-12 Inf])
 
 
@@ -154,13 +155,39 @@ figure
 set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
 semilogy(CGerror,'linewidth',2)
 grid on; box on; hold on;
+semilogy(CGerror1,'linewidth',2);
 semilogy(CGerror2,'linewidth',2);
 semilogy(CGerror3,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Error','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','interpreter','latex','fontsize',12,'location','best')
+legend('Fixed Trunc, CS','Fixed Trunc, WS','Early Trunc, CS','Early Trunc, WS','interpreter','latex','fontsize',12,'location','best')
 ylim([1e-12 Inf])
 
+
+% -------------- For d diff --------------------------
+figure
+indVec1 = find(~isinf(dDiffHist));
+indVec2 = find(~isinf(dDiffHist2));
+set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
+semilogy(dDiffHist(indVec1),'linewidth',2);
+grid on; box on; hold on;
+semilogy(dDiffHist1(indVec1),'linewidth',2);
+semilogy(dDiffHist2(indVec2),'linewidth',2,'Color',h3.Color);
+semilogy(dDiffHist3(indVec2),'linewidth',2,'Color',h3.Color);
+xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+ylabel('$\| d_{i+1} - d_i \|$','interpreter','latex','fontsize',15)
+legend('Fixed Trunc, CS','Fixed Trunc, WS','Early Trunc, CS','Early Trunc, WS','interpreter','latex','fontsize',12,'location','best')
+
+figure
+set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
+semilogy(dInitHist,'linewidth',2);
+grid on; box on; hold on;
+semilogy(dInitHist1,'linewidth',2);
+semilogy(dInitHist2,'linewidth',2);
+semilogy(dInitHist3,'linewidth',2);
+xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
+ylabel('$\| d - d_i^0 \|$','interpreter','latex','fontsize',15)
+legend('Fixed Trunc, CS','Fixed Trunc, WS','Early Trunc, CS','Early Trunc, WS','interpreter','latex','fontsize',12,'location','best')
 
 
 
