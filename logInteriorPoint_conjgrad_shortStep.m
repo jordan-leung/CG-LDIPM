@@ -1,4 +1,4 @@
-function [x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist,dDiffHist,dInitHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh,wsFlag)
+function [x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist] = logInteriorPoint_conjgrad_shortStep(W,c,Aineq,bineq,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,preCondFlag,params,vThresh,vNumThresh)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 % Get size variabl,es
 m = size(Aineq,1);
@@ -41,8 +41,6 @@ k_ls = params.k;
 const.params = params;
 const.vThresh = vThresh;
 const.vNumThresh = vNumThresh;
-dDiffHist = zeros(maxIter,1); 
-dInitHist = zeros(maxIter,1); 
 
 tic
 % --------------------- INITAL CENTERING PROCEDURE ---------------------
@@ -51,12 +49,7 @@ v = v0;
 mu = mu_0;
 d = zeros(m,1);
 while dNorm > 1e-8
-    if wsFlag
-        dInit = d;
-    else
-        dInit = d*0;
-    end
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,dInit,preCondFlag,maxCGIter,CGTol);
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
     
@@ -77,8 +70,6 @@ while dNorm > 1e-8
     CGres(numIter) = res;
     CGerror(numIter) = e_i;
     dHist(numIter) = dNorm;
-    dDiffHist(numIter) = Inf;
-    dInitHist(numIter) = norm(dInit - dOpt,2);
 end
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
 dPrev = d;
@@ -89,12 +80,7 @@ while mu > mu_f
     % Run N inner-loop iterations
     for j = 1:N_ls
         % Run the Newton system.
-        if wsFlag
-            dInit = d;
-        else
-            dInit = d*0;
-        end
-        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,dInit,preCondFlag,maxCGIter,CGTol);
+        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol);
         
         % For calculating error
         MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));
@@ -114,10 +100,7 @@ while mu > mu_f
         CGIters(numIter) = CGIter_i;
         CGres(numIter) = res;
         CGerror(numIter) = e_i;
-        dHist(numIter) = dNorm;
-        dDiffHist(numIter) = norm(d - dPrev,2);
-        dInitHist(numIter) = norm(dInit - dOpt,2);
-        dPrev = d;
+        dHist(numIter) = norm(d,2);
     end
 end
 execTime = toc;
@@ -127,8 +110,6 @@ CGIters = CGIters(1:numIter);
 CGres = CGres(1:numIter);
 CGerror = CGerror(1:numIter);
 dHist = dHist(1:numIter);
-dDiffHist = dDiffHist(1:numIter);
-dInitHist = dInitHist(1:numIter);
 end
 
 

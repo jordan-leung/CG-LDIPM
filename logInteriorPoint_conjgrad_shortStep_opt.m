@@ -114,7 +114,7 @@ while muPrev > mu_f
         CGIters(numIter) = CGIter_i;
         CGres(numIter) = res;
         CGerror(numIter) = e_i;
-        dHist(numIter) = norm(d,2);;
+        dHist(numIter) = norm(d,2);
         dDiffHist(numIter) = norm(d - dPrev,2);
         dInitHist(numIter) = norm(dInit - dOpt,2);
         muHist(numIter) = mu;

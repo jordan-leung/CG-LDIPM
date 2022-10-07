@@ -50,7 +50,7 @@ v = v0;
 mu = mu_0;
 d = zeros(m,1);
 while dNorm > 1e-8
-    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,NaN);
+    [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol,NaN);
     dNorm = norm(d,'inf');
     fprintf('mu = %0.2e, d = %0.4f (Centering) \n',mu,dNorm)
     
@@ -79,10 +79,11 @@ while mu > mu_f
     
     % Run to get centered point so we can cheat and use the divergence
     % explicitly
+    dPrev = d;
     vHat = v;
     while dNorm > 1e-10
         % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,vHat,const,d*0,preCondFlag,maxCGIter,CGTol,NaN);
+        [d,CGIter_i,res] = solveNewtonStep(mu,vHat,const,d,preCondFlag,maxCGIter,CGTol,NaN);
         
         % Update x, v, d
         dNorm = norm(d,'inf');
@@ -92,12 +93,13 @@ while mu > mu_f
     
     
     % Run N inner-loop iterations
+    d = dPrev;
     for j = 1:N_ls
         % Calculate divergence and the gradient
         h_i = (exp(vHat))'*(exp(-v)) + (exp(-vHat))'*(exp(v)) - 2*m;
 
         % Run the Newton system.
-        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d*0,preCondFlag,maxCGIter,CGTol,h_i);
+        [d,CGIter_i,res] = solveNewtonStep(mu,v,const,d,preCondFlag,maxCGIter,CGTol,h_i);
         
         % For calculating error
         MTemp = eye(m) + diag(exp(v))*A*invW*A'*diag(exp(v));

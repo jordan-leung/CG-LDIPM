@@ -4,7 +4,7 @@ close all
 
 % Load data
 saveFlag = 0;
-caseFlag = 5;
+caseFlag = 1;
 switch caseFlag
     case 1 % Active constraints MPC example
         load('QPData'); 
@@ -35,19 +35,16 @@ switch caseFlag
         
 %         % Static variables
 %         N = 100;
-%         condTarget = 1e1;
-%         m = N;
-%         A = zeros(m,N);
-%         for i = 1:m
-%             A(i,1+(i-1)*(N/m):i*(N/m)) = ones(1,N/m);
-%         end
-%         b_low = -1;
-%         b_high = 1;
-%         c_low = -10;
-%         c_high = 10;
+%         m = 200;
+%         condTarget = 1000;
+%         A = rand(m,N);
+%         b_low = 1e-4;
+%         b_high = 0.1;
+%         c_low = -100;
+%         c_high = 100;
 %         
 %         % Changing Variables
-%         hh= 2*rand(N,N)-1 + 2*rand(N,N)-1;
+%         hh= 10*rand(N,N)-1 + 10*rand(N,N)-1;
 %         hh = hh*hh';              % symmetric with random entries beween -2 and 2
 %         [u, s, v] = svd(hh);
 %         s = diag(s);           % s is vector
@@ -58,7 +55,7 @@ switch caseFlag
 %         c =  c_low + (c_high-c_low).*rand(N,1);
 %         b = b_low + (b_high - b_low)*rand(m,1);
         
-        %                 save('Case5_Data','H','c','A','b');
+% %         save('Case5_Data_new','H','c','A','b');
         load('Case5_Data');
 end
 invH = inv(H);
@@ -104,23 +101,30 @@ const.params = params;
 
 % Shortstep_optimal - no WS
 fprintf('------ Running with CGLDIPM-Shortstep (Optimal)  ------ \n')
-[x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist,dDiffHist,dInitHist] = logInteriorPoint_conjgrad_shortStep_opt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
+[x,v,mu,execTime,numIter,CGIters,CGres,CGerror,dHist] = logInteriorPoint_conjgrad_shortStep_opt(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
 
  % Regular
 fprintf('------ Running with CGLDIPM-Shortstep  ------ \n')
-[x2,v2,mu2,execTime2,numIter2,CGIters2,CGres2,CGerror2,dHist2] = logInteriorPoint_conjgrad_shortStep(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh,1);
+[x2,v2,mu2,execTime2,numIter2,CGIters2,CGres2,CGerror2,dHist2] = logInteriorPoint_conjgrad_shortStep(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
 
 % Regular criterion but with explicit error
 fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
 [x3,v3,mu3,execTime3,numIter3,CGIters3,CGres3,CGerror3,dHist3] = logInteriorPoint_conjgrad_shortStep_calcError(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
 % 
-% % Regular criterion but with explicit divergence
-% fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
-% [x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4,CGerror4,dHist4] = logInteriorPoint_conjgrad_shortStep_explicit_onlyDiv(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
+% Regular criterion but with explicit divergence
+fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
+[x4,v4,mu4,execTime4,numIter4,CGIters4,CGres4,CGerror4,dHist4] = logInteriorPoint_conjgrad_shortStep_explicit_onlyDiv(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
 % 
-%  % Regular criterion but with explicit divergence and error
-% fprintf('------ Running with CGLDIPM Calc Divergence  ------ \n')
-% [x5,v5,mu5,execTime5,numIter5,CGIters5,CGres5,CGerror5,dHist5,hHist5] = logInteriorPoint_conjgrad_shortStep_explicit(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
+ % Regular criterion but with explicit divergence and error
+fprintf('------ Running with CGLDIPM Calc Divergence  ------ \n')
+[x5,v5,mu5,execTime5,numIter5,CGIters5,CGres5,CGerror5,dHist5,hHist5] = logInteriorPoint_conjgrad_shortStep_explicit(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,params,vThresh,vNumThresh);
+
+slack = A*x - b;
+ind = find(slack > -1e-4)
+slack(ind)
+
+
+
 % 
 % % % Other criterion with explicit divergence (compare to onlyDiv)
 % % fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
@@ -139,12 +143,13 @@ fprintf('------ Running with CGLDIPM-Shortstep (Calc Error) ------ \n')
 
 %% Plotting
 close all
-
+saveFigFlag = 1;
+figBaseName = 'MPC';
 
 % --------------- Plots for the shortstep method ---------------
-
+figSize = [0.1300 0.1192 0.15 0.2];
 figure
-set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
+set(gcf,'units','normalized','position',figSize)
 h1 = plot(CGIters,'linewidth',2);
 grid on; box on; hold on;
 h2 = plot(CGIters2,'linewidth',2);
@@ -153,11 +158,16 @@ h4 = plot(CGIters4,'linewidth',2);
 h5 = plot(CGIters5,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Iterations','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
+% legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
 ylim([1 Inf])
+if saveFigFlag
+    filename = strcat('./PaperFigures/',figBaseName,'_iters');
+    saveas(gcf,filename,'epsc')
+end
+
 
 figure
-set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
+set(gcf,'units','normalized','position',figSize)
 semilogy(CGres,'linewidth',2)
 grid on; box on; hold on;
 semilogy(CGres2,'linewidth',2);
@@ -166,12 +176,16 @@ semilogy(CGres4,'linewidth',2);
 semilogy(CGres5,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Residual','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
+% legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
 ylim([1e-12 Inf])
+if saveFigFlag
+    filename = strcat('./PaperFigures/',figBaseName,'_res');
+    saveas(gcf,filename,'epsc')
+end
 
 
 figure
-set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
+set(gcf,'units','normalized','position',figSize)
 semilogy(CGerror,'linewidth',2)
 grid on; box on; hold on;
 semilogy(CGerror2,'linewidth',2);
@@ -180,91 +194,35 @@ semilogy(CGerror4,'linewidth',2);
 semilogy(CGerror5,'linewidth',2);
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
 ylabel('CG Error','interpreter','latex','fontsize',15)
-legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
+% legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best')
 ylim([1e-12 Inf])
+if saveFigFlag
+    filename = strcat('./PaperFigures/',figBaseName,'_error');
+    saveas(gcf,filename,'epsc')
+end
 
-
-% --------------- Compare the other bound ---------------
-
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% h1 = plot(CGIters,'linewidth',2);
-% grid on; box on; hold on;
-% plot(CGIters4,'linewidth',2);
-% plot(CGIters6,'linewidth',2);
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Iterations','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Bound 1 w/ Exact Div','Bound 2 w/ Exact Div','interpreter','latex','fontsize',12,'location','best')
-% ylim([1 Inf])
-% 
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% semilogy(CGres,'linewidth',2)
-% grid on; box on; hold on;
-% semilogy(CGres4,'linewidth',2);
-% semilogy(CGres6,'linewidth',2);
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Residual','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Bound 1 w/ Exact Div','Bound 2 w/ Exact Div','interpreter','latex','fontsize',12,'location','best')
-% ylim([1e-12 Inf])
-
-
-% % --------------- Compare the bounds on e ---------------
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% h1 = plot(CGIters,'linewidth',2);
-% grid on; box on; hold on;
-% h2 = plot(CGIters2,'linewidth',2);
-% h5 = plot(CGIters7,'linewidth',2);
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Iterations','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Residual Bound','Residual and M-norm Bound','interpreter','latex','fontsize',12,'location','best')
-% ylim([1 Inf])
-% 
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% semilogy(CGres,'linewidth',2)
-% grid on; box on; hold on;
-% semilogy(CGres2,'linewidth',2);
-% semilogy(CGres7,'linewidth',2);
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Residual','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Residual Bound','Residual and M-norm Bound','interpreter','latex','fontsize',12,'location','best')
-% ylim([1e-12 Inf])
-% 
-% 
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% semilogy(CGerror,'linewidth',2)
-% grid on; box on; hold on;
-% semilogy(CGerror2,'linewidth',2);
-% semilogy(CGerror7,'linewidth',2);
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('CG Error','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Residual Bound','Residual and M-norm Bound','interpreter','latex','fontsize',12,'location','best')
-% ylim([1e-12 Inf])
-% 
-% 
-% figure
-% set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-% semilogy(dHist,'linewidth',2)
-% grid on; box on; hold on;
-% semilogy(dHist2,'linewidth',2);
-% semilogy(dHist7,'linewidth',2);
-% plot([1 length(dHist)],[params.gamma params.gamma])
-% xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-% ylabel('$\|d\|$','interpreter','latex','fontsize',15)
-% legend('Fixed truncation','Residual Bound','Residual and M-norm Bound','$\|d\|$ upper-bound','interpreter','latex','fontsize',12,'location','best')
-% xlim([1 Inf])
-
-% -------------- For d diff --------------------------
 figure
-indVec = find(~isinf(dDiffHist));
-set(gcf,'units','normalized','position',[0.1300 0.1192 0.1 0.2])
-semilogy(dDiffHist(indVec),'linewidth',2);
+set(gcf,'units','normalized','position',figSize)
+semilogy(dHist,'linewidth',2)
 grid on; box on; hold on;
 xlabel('LDIPM Iteration','interpreter','latex','fontsize',15)
-ylabel('$\| d_{i+1} - d_i \|$','interpreter','latex','fontsize',15)
+ylabel('$\|\bar{d}\|$','interpreter','latex','fontsize',15)
+if saveFigFlag
+    filename = strcat('./PaperFigures/',figBaseName,'_dNorm');
+    saveas(gcf,filename,'epsc')
+end
 
 
-
+figure
+plot(NaN,'linewidth',2)
+grid on; box on; hold on;
+plot(NaN,'linewidth',2);
+plot(NaN,'linewidth',2);
+plot(NaN,'linewidth',2);
+plot(NaN,'linewidth',2);
+legend('Fixed truncation','Regular Bound','Bound w/ Exact Error','Bound w/ Exact Div','Bound w/ Exact Error and Div','interpreter','latex','fontsize',12,'location','best','NumColumns',3)
+set(gca,'visible','off')
+if saveFigFlag
+    filename = strcat('./PaperFigures/',figBaseName,'_legend');
+    saveas(gcf,filename,'epsc')
+end
