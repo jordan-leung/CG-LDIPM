@@ -1,4 +1,4 @@
-function [x,lambda,s,v,mu,startFlag,numIter,muStar,exitFlag,execTime,CGIters,CGres] = logInteriorPoint_conjgrad_INB(W,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,printFlag)
+function [x,lambda,s,v,muVec,startFlag,numIter,muStar,exitFlag,execTime,CGIters,CGres,FVec,feasVec] = logInteriorPoint_conjgrad_INB(W,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,printFlag,FNormLimit)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 
 exitFlag =  1; %  exitFlag = 0 indicates max iter exceeded
@@ -10,11 +10,14 @@ n = size(A,2);
 % Store CG output feedback
 CGIters = zeros(maxIter,1);
 CGres = zeros(maxIter,1);
+muVec = zeros(maxIter,1);
+FVec = zeros(maxIter,1);
+feasVec = zeros(maxIter,1);
 x = zeros(n,1);
 
 % First, change variables to Ax + b >= 0... This is just for uniformity
 % with quadprog's inputs.
-A = - A;
+A = -A;
 
 % Pack
 invW = inv(W);
@@ -26,10 +29,8 @@ const.b = b;
 numIter = 0; % number of newton iterations performed
 
 % Inexact CG parameters
-eta = 0.1; % choose eta \in (0,1)
 theta = 0.9; % choose theta \in (0,1)
 tConst = 0.5; % choose tConst \in (0,1)
-const.eta = eta;
 const.theta = theta;
 
 % --------------------- FIRST NEWTON ITERATION ---------------------
@@ -52,10 +53,10 @@ mu2 = 1;
 k2 = 1/sqrt(mu2);
 
 % Run first Newton system, generate a warm-start d2Hat for the 2nd
-[d1Hat,cg1,res1] = solveNewtonStep(mu1,x,v,const,maxCGIter,CGTol,zeros(m,1),1);
+[d1Hat,cg1,res1] = solveNewtonStep(mu1,v,const,maxCGIter,CGTol,zeros(m,1),1);
 
 % Run seconds Newton system starting at warm-start d2Hat
-[d2Hat,cg2,res2] = solveNewtonStep(mu1,x,v,const,maxCGIter,CGTol,d1Hat,1);
+[d2Hat,cg2,res2] = solveNewtonStep(mu2,v,const,maxCGIter,CGTol,d1Hat,1);
 CGIters(numIter+1) = cg1+cg2;
 CGres(numIter+1) = max([res1 res2]);
 
@@ -81,65 +82,103 @@ if ~isinf(muStar)
     % feasible mu... Either just iterates off mu0, or to muStar
     alpha = min(1, 1/(norm(d,'Inf')^2));
     v = v + alpha*d;
-    x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*alpha*d) - c,const);
+    x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*alpha.*d) - c,const);
     numIter = numIter + 1;
 else % Otherwise, truly give  up and cold start
     mu = mu_0; % under the update at the end
-    d = Inf*dStar;
+    d = zeros(m,1);
     v = zeros(size(A,1),1);
     startFlag = 0;
     numIter = numIter + 1;
 end
 
-
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
 
 % Then, we finally run the main loop which selects muStar
-mu_inc = 0.99;
-while mu > mu_f && numIter < maxIter  
-    if isinf(d(1))
-        % Execute an exact Newton step and use the alpha step-size
-        [d,cg,res] = solveNewtonStep(mu,x,v,const,maxCGIter,CGTol,zeros(m,1),1);
-        dNorm = norm(d,'inf')
-        alpha = min(1, 1/(dNorm^2));
-        v = v + alpha*d;
-        x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c,const);
-        FPlus = NaN;
-    else
-        [d,cg,res,res_scaled,Fval] = solveNewtonStep(mu,x,v,const,maxCGIter,CGTol,d,0);
+etaInitFlag = 1;
+muPrev = mu;
+FPlus = 10*FNormLimit;
+notFeasible = 1;
+while (muPrev > mu_f && numIter < maxIter) || notFeasible
+    muVec(numIter) = mu;
+    
+    %     INITIAL CENTERING PROCEDURE 
+    %     if isinf(d(1))
+    %         % Execute an exact Newton step and use the alpha step-size
+    %         [d,cg,res] = solveNewtonStep(mu,v,const,maxCGIter,CGTol,zeros(m,1),1);
+    %         dNorm = norm(d,'inf');
+    %         alpha = min(1, 1/(dNorm^2));
+    %         v = v + alpha*d;
+    %         x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c,const);
+    %         FPlus = NaN; % just for printing
+    %     else
+    
+    
+    % Solve inexact Newton
+    if etaInitFlag
+        eta = 0.01; % inital eta
+        etaInitFlag = 0;
         
-        % Run inner-loop backtracking search
-        dx_k = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c,const) - x;
-        dv_k = d;
-        eta_k = eta;
-        FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
-        FNorm = norm(Fval,'inf');
-        while FPlus > (1 - tConst*(1-eta_k))*FNorm
-            dx_k = theta*dx_k;
-            dv_k = theta*dv_k;
-            eta_k = 1-theta*(1-eta_k);
-            FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
-        end
-        x = x + dx_k;
-        v = v + dv_k;
+        % Evaluate for next pass
+        F = F_eval(x,v,mu,const);
+        FPrime = FPrime_eval(v,mu,const);
+    else
+        % Evaluate F(x_k) and F'(x_k)
+        F = F_eval(x,v,mu,const);
+        FPrime = FPrime_eval(v,mu,const);
+        eta = norm(F - FPrev - FPrimePrev*sPrev,'inf')/norm(FPrev,'inf');
     end
+
+    % Execute inexact newton to tolerace epsilon
+    [d,cg,res,res_scaled] = solveNewtonStep(mu,v,const,maxCGIter,CGTol,d,0,eta,F);
+    
+    % Run inner-loop backtracking search
+    dx_k = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c,const) - x;
+    dv_k = d;
+    eta_k = eta;
+    FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
+    FNorm = norm(F,'inf');
+    while FPlus > (1 - tConst*(1-eta_k))*FNorm
+        dx_k = theta*dx_k;
+        dv_k = theta*dv_k;
+        eta_k = 1-theta*(1-eta_k);
+        FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
+    end
+    x = x + dx_k;
+    v = v + dv_k;
+    FPrev = F;
+    FPrimePrev = FPrime;
+    sPrev = [dx_k; dv_k];
+    
+    % Check feasibility
+    minSlack = min(A*x + b);
+    if minSlack < -1e-6 
+        notFeasible = 1;
+    else
+        notFeasible = 0;
+    end        
     
     % Print
     if printFlag
-        fprintf('mu = %0.2e, d = %0.4f, F = %0.2e \n',mu,norm(d,'Inf'),FPlus)
+        fprintf('mu = %0.2e, d = %0.4f, F = %0.2e, F+ = %0.2e, Feas: %0.0f \n',mu,norm(d,'Inf'),FNorm,FPlus,~notFeasible)
     end
-    
-    dNorm = norm(d,'inf');
-    if dNorm < 1
-        % Increment mu and
-        mu = mu_inc*mu;
+    muPrev = mu;
+
+    % Incremement mu if our F(x+) value is less than the threshold (and
+    % mu > mu_f)
+    if FPlus < FNormLimit && mu > mu_f
+        mu = muStarSolve_FNorm(x,v,const,FNormLimit,mu_f);
     end
+    FVec(numIter) = FNorm;
+    feasVec(numIter) = ~notFeasible;
     
     % Store
     CGIters(numIter+1) = cg;
     CGres(numIter+1) = res;
     numIter = numIter + 1;
 end
+muVec(numIter) = mu;
+feasVec(numIter) = 1;
 
 % Solve for primal variable x
 lambda = sqrt(mu)*exp(v);
@@ -147,6 +186,9 @@ s = sqrt(mu)*exp(-v);
 execTime = toc;
 CGIters = CGIters(1:numIter,:);
 CGres = CGres(1:numIter,:);
+muVec = muVec(1:numIter);
+FVec = FVec(1:numIter);
+feasVec = feasVec(1:numIter);
 end
 
 
@@ -173,11 +215,40 @@ A = const.A;
 b = const.b;
 
 F = [W*x - sqrt(mu)*A'*exp(v) + c;...
-     A*x - sqrt(mu)*exp(-v) + b];
+    A*x - sqrt(mu)*exp(-v) + b];
+end
+
+% Function to evaluate F(x_k)
+function FNorm = F_eval_func(z,mu,const)
+% Returns F(x_k)
+W = const.W;
+c = const.c;
+A = const.A;
+b = const.b;
+
+m = size(A,1);
+n = size(A,2);
+x = z(1:n);
+v = z(n+1:end);
+
+F = [W*x - sqrt(mu)*A'*exp(v) + c;...
+    A*x - sqrt(mu)*exp(-v) + b];
+
+FNorm = norm(F,2);
+end
+
+% Function to evaluate F'(x_k)
+function FPrime = FPrime_eval(v,mu,const)
+% Returns F(x_k)
+W = const.W;
+A = const.A;
+
+FPrime = [W, - sqrt(mu)*A'*diag(exp(v));...
+    A, sqrt(mu)*diag(exp(-v))];
 end
 
 
-function [d,numIter,res,res_scaled,Fval] = solveNewtonStep(mu,x,v,const,maxIter,tol,d0,exactFlag)
+function [d,numIter,res,res_scaled] = solveNewtonStep(mu,v,const,maxIter,tol,d0,exactFlag,eta,F)
 % W = const.W;
 % invW = const.invW;
 c = const.c;
@@ -185,18 +256,12 @@ ACon = const.A;
 bCon = const.b;
 m = size(ACon,1);
 
-% Unpack inexact Newton parameters
-eta = const.eta;
-
 % Define the RHS vector b
 f = ones(m,1) - 1/sqrt(mu)*exp(v).*(ACon*invWTimes(sqrt(mu)*ACon'*exp(v) - c,const) + bCon);
 
 % Define the residual bound
 if ~exactFlag
-    Fval = F_eval(x,v,mu,const);
-    RHS_bound = (eta/sqrt(mu))*norm(Fval,'inf');
-else
-    Fval = 0;
+    RHS_bound = (eta/sqrt(mu))*norm(F,'inf');
 end
 
 % --------------- CONJUGATE GRADIENT ---------------
@@ -215,7 +280,7 @@ w = MTimes(p,v,const);
 alpha = r'*z/(p'*w);
 
 % Update x and r
-x = x + alpha*p; 
+x = x + alpha*p;
 rPrev = r;
 r = r - alpha*w; % r1
 numIter = 1;
@@ -223,13 +288,13 @@ numIter = 1;
 % Calculate residual and the scaled residual
 res = norm(r,2);
 if ~exactFlag
-   res_scaled = norm(exp(-v).*r,'inf');
+    res_scaled = norm(exp(-v).*r,'inf');
 else
     res_scaled = 2; % include just to disregard this condition
     RHS_bound = 1;
 end
 
-% Iterate... 
+% Iterate...
 while numIter  < maxIter && res > tol && res_scaled > RHS_bound
     % Perform CG iterations
     zPrev = z;
@@ -238,7 +303,7 @@ while numIter  < maxIter && res > tol && res_scaled > RHS_bound
     p = z + beta*p;
     w = MTimes(p,v,const);
     alpha = r'*z/(p'*w);
-
+    
     % Update x
     x = x + alpha*p;
     rPrev = r;
@@ -297,10 +362,60 @@ for i  = 1:m
 end
 muStar = (1/kStar)^2; % returns muStar = Inf if infeasible
 if muStar < mu_f % make sure muStar isn't too small or too large for numerical reasons
-    muStar = min([mu_f 1e-10]);
+    muStar = mu_f;
 elseif muStar > 1e10
     muStar = Inf;
 end
 d = d0 + (1/sqrt(muStar))*d1;
 end
 
+
+
+function  [muStar] = muStarSolve_FNorm(x,v,const,FMax,mu_f)
+% // Returns the largest k satisfying | d0 + k * d1 |_{infty} \le dinfmax
+upper_bound = 1e14;
+lower_bound =  0;
+A = const.A;
+
+d0 = [const.W*x + const.c; A*x +  const.b];
+d1 = -[A'*exp(v) ; exp(-v)];
+dinfmax = FMax;
+
+m = length(d0);
+for i  = 1:m
+    upper_bound_i = (dinfmax - d0(i)) / d1(i);
+    lower_bound_i = (-dinfmax - d0(i)) / d1(i);
+    
+    % Neither is either lower or upper necessarily, so just reorder
+    % according to whichever is larger
+    if (lower_bound_i > upper_bound_i)
+        temp =  upper_bound_i;
+        upper_bound_i = lower_bound_i;
+        lower_bound_i = temp;
+    end
+    
+    % Check whether or not this is larger/small than the previous upper and
+    % lower bounds
+    if upper_bound_i < upper_bound
+        upper_bound = upper_bound_i;
+    end
+    if lower_bound_i > lower_bound
+        lower_bound = lower_bound_i;
+    end
+    
+    % Finally, check if lower_bound > upper_bound, indicating that  the
+    % solution is infeasible
+    if lower_bound > upper_bound
+        kStar = Inf;
+        break
+    else
+        kStar = lower_bound; % note k = sqrt(deltaMu), so we want the largest k
+    end
+end
+muStar = kStar^2; % returns muStar = Inf if infeasible
+if muStar < mu_f % make sure muStar isn't too small or too large for numerical reasons
+    muStar = mu_f;
+elseif muStar > 1e10
+    muStar = Inf;
+end
+end
