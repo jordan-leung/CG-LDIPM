@@ -4,7 +4,7 @@ close all
 
 % Load data
 saveFlag = 0;
-caseFlag = 5;
+caseFlag = 1;
 switch caseFlag
     case 1 % Active constraints MPC example
         load('QPData'); 
@@ -44,22 +44,55 @@ maxCGIter = 100000;
 CGTol = 1e-8;
 v0 = zeros(size(A,1),1);
 
-% fprintf('------ Running with regular LDIPM  ------ \n')
-% [x_reg,~,~,v_reg] = logInteriorPoint_test(H,c,A,b,mu_f,mu_0,v0,maxIter,1);
+% Set options
+opts.mu_f = mu_f;
+opts.mu_0 = mu_0;
+opts.maxIter = maxIter;
+opts.printFlag = 1;
+opts.maxCGIter = maxCGIter;
+opts.CGTol = CGTol;
+opts.preCondFlag = 0;
+
 
 fprintf('------ Running with CG LDIPM (longstep)  ------ \n')
-[x_cg,~,~,v_cg,muVec_cg,~,~,~,~,~,CGIters_cg,CGres_cg] = logInteriorPoint_conjgrad(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,0,1,1,1);
+[x_cg,output_cg] = logInteriorPoint_conjgrad(H,c,A,b,v0,opts);
 
-fprintf('------ Running with CGLDIPM-GIN  ------ \n')
-[x,lambda,s,v,muVec,startFlag,numIter,muStar,exitFlag,execTime,CGIters,CGres,FVec,feasVec] = logInteriorPoint_conjgrad_INB(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,1000);
+% fprintf('------ Running with CGLDIPM-GIN  ------ \n')
+% opts.FNormLimit = 5;
+% [x1,output1] = logInteriorPoint_conjgrad_INB(H,c,A,b,v0,opts);
 % 
-fprintf('------ Running with CGLDIPM-GIN  ------ \n')
-[x2,~,~,v2,muVec2,~,numIter,~,~,~,CGIters2,CGres2,FVec2,feasVec2] = logInteriorPoint_conjgrad_INB(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,900);
+% fprintf('------ Running with CGLDIPM-GIN  ------ \n')
+% opts.FNormLimit = 1;
+% [x2,output2] = logInteriorPoint_conjgrad_INB(H,c,A,b,v0,opts);
 % 
+% fprintf('------ Running with CGLDIPM-GIN  ------ \n')
+% opts.FNormLimit = 0.5;
+% [x3,output3] = logInteriorPoint_conjgrad_INB(H,c,A,b,v0,opts);
+
 fprintf('------ Running with CGLDIPM-GIN  ------ \n')
-[x3,~,~,v3,muVec3,~,numIter,~,~,~,CGIters3,CGres3,FVec3,feasVec3] = logInteriorPoint_conjgrad_INB(H,c,A,b,mu_f,mu_0,v0,maxIter,maxCGIter,CGTol,1,800);
+opts.FNormLimit = 5;
+[x1,output1] = logInteriorPoint_conjgrad_INB_edit(H,c,A,b,v0,opts);
+
+fprintf('------ Running with CGLDIPM-GIN  ------ \n')
+opts.FNormLimit = 1;
+[x2,output2] = logInteriorPoint_conjgrad_INB_edit(H,c,A,b,v0,opts);
+
+fprintf('------ Running with CGLDIPM-GIN  ------ \n')
+opts.FNormLimit = 0.5;
+[x3,output3] = logInteriorPoint_conjgrad_INB_edit(H,c,A,b,v0,opts);
 
 
+% Solution check
+norms = zeros(3,1);
+norms(1) = norm(x_cg - x1);
+norms(2)= norm(x_cg - x2);
+norms(3) = norm(x_cg - x3);
+for i = 1:length(norms)
+   if norms(i) > 1e-4 || isnan(norms(i))
+       warning('Big norm!!!!')
+       fprintf('Solution %0.0d has a norm of %0.2e \n',i,norms(i))
+   end
+end
 
 
 %% PLotting
@@ -70,24 +103,24 @@ saveFigFlag = 0;
 
 % Mu vs. CG iterations 
 figure
-totalIter_cg = cumsum((sum(CGIters_cg'))');
-totalIter = cumsum(CGIters);
-totalIter2 = cumsum(CGIters2);
-totalIter3 = cumsum(CGIters3);
+totalIter_cg = cumsum((sum(output_cg.CGIters'))');
+totalIter1 = cumsum(output1.CGIters);
+totalIter2 = cumsum(output2.CGIters);
+totalIter3 = cumsum(output3.CGIters);
 set(gcf,'units','normalized','position',figSize)
-h1 = semilogy(totalIter_cg,muVec_cg);
+h1 = semilogy(totalIter_cg,output_cg.muVec);
 hold on
-h2 = semilogy(totalIter,muVec);
-h3 = semilogy(totalIter2,muVec2);
-h4 = semilogy(totalIter3,muVec3);
-semilogy(totalIter_cg,muVec_cg,'.','Markersize',15,'Color',h1.Color)
-semilogy(totalIter,muVec,'.','Markersize',15,'Color',h2.Color)
-semilogy(totalIter2,muVec2,'.','Markersize',15,'Color',h3.Color)
-semilogy(totalIter3,muVec3,'.','Markersize',15,'Color',h4.Color)
-semilogy(totalIter_cg(end),muVec_cg(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
-semilogy(totalIter(end),muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-semilogy(totalIter2(end),muVec2(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-semilogy(totalIter3(end),muVec3(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+h2 = semilogy(totalIter1,output1.muVec);
+h3 = semilogy(totalIter2,output2.muVec);
+h4 = semilogy(totalIter3,output3.muVec);
+semilogy(totalIter_cg,output_cg.muVec,'.','Markersize',15,'Color',h1.Color)
+semilogy(totalIter1,output1.muVec,'.','Markersize',15,'Color',h2.Color)
+semilogy(totalIter2,output2.muVec,'.','Markersize',15,'Color',h3.Color)
+semilogy(totalIter3,output3.muVec,'.','Markersize',15,'Color',h4.Color)
+semilogy(totalIter_cg(end),output_cg.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
+semilogy(totalIter1(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+semilogy(totalIter2(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+semilogy(totalIter3(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
 grid on; box on;
 hold off
 legend([h1 h2 h3 h4],'Longstep w/ CG','Inexact Newton, $\epsilon = 10$',...
@@ -103,17 +136,17 @@ end
 % CG iterations vs. LDIPM iteration
 set(0, 'DefaultLineLineWidth', 2);
 figure
-CGIters_longstep =  CGIters_cg(:,1) + CGIters_cg(:,2);
+CGIters_longstep =  output_cg.CGIters(:,1) + output_cg.CGIters(:,2);
 set(gcf,'units','normalized','position',figSize)
 plot(CGIters_longstep,'color',h1.Color);
 grid on; box on; hold on
-plot(CGIters,'color',h2.Color);
-plot(CGIters2,'color',h3.Color);
-plot(CGIters3,'color',h4.Color);
+plot(output1.CGIters,'color',h2.Color);
+plot(output2.CGIters,'color',h3.Color);
+plot(output3.CGIters,'color',h4.Color);
 plot(length(CGIters_longstep),CGIters_longstep(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
-plot(length(CGIters),CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-plot(length(CGIters2),CGIters2(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-plot(length(CGIters3),CGIters3(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+plot(length(output1.CGIters),output1.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+plot(length(output2.CGIters),output2.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+plot(length(output3.CGIters),output3.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
 legend('Longstep w/ CG','Inexact Newton, $\epsilon = 10$',...
     'Inexact Newton, $\epsilon = 1$','Inexact Newton, $\epsilon = 0.5$',...
     'interpreter','latex','fontsize',12,'location','northeast')
@@ -127,13 +160,13 @@ end
 % F bound
 figure
 set(gcf,'units','normalized','position',figSize)
-plot(feasVec,'color',h2.Color);
+plot(output1.feasVec,'color',h2.Color);
 hold on; box on; grid on;
-plot(feasVec2,'color',h3.Color);
-plot(feasVec3,'color',h4.Color);
-plot(length(feasVec),feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-plot(length(feasVec2),feasVec2(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-plot(length(feasVec3),feasVec3(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+plot(output2.feasVec,'color',h3.Color);
+plot(output3.feasVec,'color',h4.Color);
+plot(length(output1.feasVec),output1.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+plot(length(output2.feasVec),output2.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+plot(length(output3.feasVec),output3.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
 xlabel('LDIPM Iterations','interpreter','latex','fontsize',15)
 ylabel('Primal Feasibility','interpreter','latex','fontsize',15)
 if saveFigFlag

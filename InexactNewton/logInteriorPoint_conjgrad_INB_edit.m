@@ -170,17 +170,30 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
     eta_k = eta;
     FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
     FNorm = norm(F,'inf');
+    muPrev = mu;
     while FPlus > (1 - tConst*(1-eta_k))*FNorm
         dx_k = theta*dx_k;
         dv_k = theta*dv_k;
         eta_k = 1-theta*(1-eta_k);
         FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
+        
+        % Check if we can find a different mu that this is satisfied for
+        muStar = muStarSolve_FNorm(x+dx_k,v+dv_k,const,FNormLimit,mu_f);
+        if muStar < mu
+            mu = muStar;
+            break
+        end
     end
     x = x + dx_k;
     v = v + dv_k;
     FPrev = F;
     FPrimePrev = FPrime;
     sPrev = [dx_k; dv_k];
+    
+    % Print
+    if printFlag
+        fprintf('mu = %0.2e, d = %0.4f, F = %0.2e, F+ = %0.2e, Feas: %0.0f \n',mu,norm(d,'Inf'),FNorm,FPlus,~notFeasible)
+    end
     
     % Check feasibility
     minSlack = min(A*x + b);
@@ -190,16 +203,13 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
         notFeasible = 0;
     end        
     
-    % Print
-    if printFlag
-        fprintf('mu = %0.2e, d = %0.4f, F = %0.2e, F+ = %0.2e, Feas: %0.0f \n',mu,norm(d,'Inf'),FNorm,FPlus,~notFeasible)
-    end
-    muPrev = mu;
-
     % Incremement mu if our F(x+) value is less than the threshold (and
     % mu > mu_f)
-    if FPlus < FNormLimit && mu > mu_f
-        mu = muStarSolve_FNorm(x,v,const,FNormLimit,mu_f);
+    if FPlus < FNormLimit && mu > mu_f && mu == muPrev
+        muStar = muStarSolve_FNorm(x,v,const,FNormLimit,mu_f);
+        if muStar < mu
+            mu = muStar;
+        end
     end
     FVec(numIter) = FNorm;
     feasVec(numIter) = ~notFeasible;
@@ -417,12 +427,11 @@ A = const.A;
 
 d0 = [const.W*x + const.c; A*x +  const.b];
 d1 = -[A'*exp(v) ; exp(-v)];
-dinfmax = FMax;
 
 m = length(d0);
 for i  = 1:m
-    upper_bound_i = (dinfmax - d0(i)) / d1(i);
-    lower_bound_i = (-dinfmax - d0(i)) / d1(i);
+    upper_bound_i = (FMax - d0(i)) / d1(i);
+    lower_bound_i = (-FMax - d0(i)) / d1(i);
     
     % Neither is either lower or upper necessarily, so just reorder
     % according to whichever is larger
