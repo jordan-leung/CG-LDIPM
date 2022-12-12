@@ -37,7 +37,7 @@ end
 invH = inv(H);
 
 % LDIPM settings
-mu_f = 1e-8;
+mu_f = 1e-7;
 mu_0 = 1e8;
 maxIter = 50000;
 maxCGIter = 100000;
@@ -133,45 +133,45 @@ if saveFigFlag
     saveas(gcf,filename,'epsc'); 
 end
 
-% CG iterations vs. LDIPM iteration
-set(0, 'DefaultLineLineWidth', 2);
-figure
-CGIters_longstep =  output_cg.CGIters(:,1) + output_cg.CGIters(:,2);
-set(gcf,'units','normalized','position',figSize)
-plot(CGIters_longstep,'color',h1.Color);
-grid on; box on; hold on
-plot(output1.CGIters,'color',h2.Color);
-plot(output2.CGIters,'color',h3.Color);
-plot(output3.CGIters,'color',h4.Color);
-plot(length(CGIters_longstep),CGIters_longstep(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
-plot(length(output1.CGIters),output1.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-plot(length(output2.CGIters),output2.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-plot(length(output3.CGIters),output3.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
-legend('Longstep w/ CG','Inexact Newton, $\epsilon = 10$',...
-    'Inexact Newton, $\epsilon = 1$','Inexact Newton, $\epsilon = 0.5$',...
-    'interpreter','latex','fontsize',12,'location','northeast')
-xlabel('LDIPM Iterations','interpreter','latex','fontsize',15)
-ylabel('CG Iteratios','interpreter','latex','fontsize',15)
-if saveFigFlag
-    filename = strcat('./Figures/','preliminaryPlot_iters');
-    saveas(gcf,filename,'epsc'); 
-end
-
-% F bound
-figure
-set(gcf,'units','normalized','position',figSize)
-plot(output1.feasVec,'color',h2.Color);
-hold on; box on; grid on;
-plot(output2.feasVec,'color',h3.Color);
-plot(output3.feasVec,'color',h4.Color);
-plot(length(output1.feasVec),output1.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-plot(length(output2.feasVec),output2.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-plot(length(output3.feasVec),output3.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
-xlabel('LDIPM Iterations','interpreter','latex','fontsize',15)
-ylabel('Primal Feasibility','interpreter','latex','fontsize',15)
-if saveFigFlag
-    filename = strcat('./Figures/','preliminaryPlot_feas');
-    saveas(gcf,filename,'epsc'); 
-end
-
+% % CG iterations vs. LDIPM iteration
+% set(0, 'DefaultLineLineWidth', 2);
+% figure
+% CGIters_longstep =  output_cg.CGIters(:,1) + output_cg.CGIters(:,2);
+% set(gcf,'units','normalized','position',figSize)
+% plot(CGIters_longstep,'color',h1.Color);
+% grid on; box on; hold on
+% plot(output1.CGIters,'color',h2.Color);
+% plot(output2.CGIters,'color',h3.Color);
+% plot(output3.CGIters,'color',h4.Color);
+% plot(length(CGIters_longstep),CGIters_longstep(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
+% plot(length(output1.CGIters),output1.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+% plot(length(output2.CGIters),output2.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+% plot(length(output3.CGIters),output3.CGIters(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+% legend('Longstep w/ CG','Inexact Newton, $\epsilon = 10$',...
+%     'Inexact Newton, $\epsilon = 1$','Inexact Newton, $\epsilon = 0.5$',...
+%     'interpreter','latex','fontsize',12,'location','northeast')
+% xlabel('LDIPM Iterations','interpreter','latex','fontsize',15)
+% ylabel('CG Iteratios','interpreter','latex','fontsize',15)
+% if saveFigFlag
+%     filename = strcat('./Figures/','preliminaryPlot_iters');
+%     saveas(gcf,filename,'epsc'); 
+% end
+% 
+% % Feasibility
+% figure
+% set(gcf,'units','normalized','position',figSize)
+% plot(output1.feasVec,'color',h2.Color);
+% hold on; box on; grid on;
+% plot(output2.feasVec,'color',h3.Color);
+% plot(output3.feasVec,'color',h4.Color);
+% plot(length(output1.feasVec),output1.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+% plot(length(output2.feasVec),output2.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+% plot(length(output3.feasVec),output3.feasVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+% xlabel('LDIPM Iterations','interpreter','latex','fontsize',15)
+% ylabel('Primal Feasibility','interpreter','latex','fontsize',15)
+% if saveFigFlag
+%     filename = strcat('./Figures/','preliminaryPlot_feas');
+%     saveas(gcf,filename,'epsc'); 
+% end
+% 
 

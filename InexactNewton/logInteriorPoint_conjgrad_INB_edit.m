@@ -124,28 +124,35 @@ else % Otherwise, truly give  up and cold start
     startFlag = 0;
     numIter = numIter + 1;
 end
+muVec(numIter) = mu;
 
 % --------------------- MAIN NEWTON ITERATION LOOP ---------------------
+
+% Run a subroutine of exact Newton steps to make sure we get into within
+% the FNorm region
+F = F_eval(x,v,mu,const);
+while norm(F,'inf') > FNormLimit && numIter < maxIter
+    % Compute newton step
+    [d,cg,res] = solveNewtonStep(mu,v,const,maxCGIter,CGTol,d,1);
+    alpha = min(1, 1/(norm(d,'Inf')^2));
+    v = v + alpha*d;
+    x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*alpha.*d) - c,const);
+    
+    % Update
+    CGIters(numIter+1) = cg;
+    CGres(numIter+1) = res;
+    muVec(numIter+1) = mu;
+    numIter = numIter + 1;    
+    F = F_eval(x,v,mu,const);
+end
+
 
 % Then, we finally run the main loop which selects muStar
 etaInitFlag = 1;
 muPrev = mu;
 notFeasible = 1;
-while (muPrev > mu_f && numIter < maxIter) || notFeasible
-    muVec(numIter) = mu;
-    
-    %     INITIAL CENTERING PROCEDURE 
-    %     if isinf(d(1))
-    %         % Execute an exact Newton step and use the alpha step-size
-    %         [d,cg,res] = solveNewtonStep(mu,v,const,maxCGIter,CGTol,zeros(m,1),1);
-    %         dNorm = norm(d,'inf');
-    %         alpha = min(1, 1/(dNorm^2));
-    %         v = v + alpha*d;
-    %         x = invWTimes(sqrt(mu)*A'*(exp(v) + exp(v).*d) - c,const);
-    %         FPlus = NaN; % just for printing
-    %     else
-    
-    
+numIter = numIter - 1;
+while (muPrev > mu_f && numIter < maxIter) || notFeasible    
     % Solve inexact Newton
     if etaInitFlag
         eta = 0.01; % inital eta
@@ -158,7 +165,11 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
         % Evaluate F(x_k) and F'(x_k)
         F = F_eval(x,v,mu,const);
         FPrime = FPrime_eval(v,mu,const);
-        eta = norm(F - FPrev - FPrimePrev*sPrev,'inf')/norm(FPrev,'inf');
+        if mu > mu_f
+            eta = norm(F - FPrev - FPrimePrev*sPrev,'inf')/norm(FPrev,'inf');
+        else
+            eta = 1e-4;
+        end
     end
 
     % Execute inexact newton to tolerace epsilon
@@ -176,13 +187,12 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
         dv_k = theta*dv_k;
         eta_k = 1-theta*(1-eta_k);
         FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
-        
-        % Check if we can find a different mu that this is satisfied for
-        muStar = muStarSolve_FNorm(x+dx_k,v+dv_k,const,FNormLimit,mu_f);
-        if muStar < mu
-            mu = muStar;
-            break
-        end
+        %         % Check if we can find a different mu that this is satisfied for
+        %         muStar = muStarSolve_FNorm(x+dx_k,v+dv_k,const,FNormLimit,mu_f);
+        %         if muStar < mu
+        %             mu = muStar;
+        %             break
+        %         end
     end
     x = x + dx_k;
     v = v + dv_k;
@@ -205,7 +215,7 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
     
     % Incremement mu if our F(x+) value is less than the threshold (and
     % mu > mu_f)
-    if FPlus < FNormLimit && mu > mu_f && mu == muPrev
+    if FPlus < FNormLimit && mu > mu_f
         muStar = muStarSolve_FNorm(x,v,const,FNormLimit,mu_f);
         if muStar < mu
             mu = muStar;
@@ -215,6 +225,7 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
     feasVec(numIter) = ~notFeasible;
     
     % Store
+    muVec(numIter+1) = mu;
     CGIters(numIter+1) = cg;
     CGres(numIter+1) = res;
     numIter = numIter + 1;
@@ -234,7 +245,7 @@ output.muStar = muStar;
 output.muVec = muVec(1:numIter);
 output.CGIters = CGIters(1:numIter,:);
 output.CGres = CGres(1:numIter,:);
-output.FVec = FVec(1:numIter);
+output.FVec = FVec(1:numIter-1);
 output.feasVec = feasVec(1:numIter);
 
 end
@@ -264,25 +275,6 @@ b = const.b;
 
 F = [W*x - sqrt(mu)*A'*exp(v) + c;...
     A*x - sqrt(mu)*exp(-v) + b];
-end
-
-% Function to evaluate F(x_k)
-function FNorm = F_eval_func(z,mu,const)
-% Returns F(x_k)
-W = const.W;
-c = const.c;
-A = const.A;
-b = const.b;
-
-m = size(A,1);
-n = size(A,2);
-x = z(1:n);
-v = z(n+1:end);
-
-F = [W*x - sqrt(mu)*A'*exp(v) + c;...
-    A*x - sqrt(mu)*exp(-v) + b];
-
-FNorm = norm(F,2);
 end
 
 % Function to evaluate F'(x_k)
