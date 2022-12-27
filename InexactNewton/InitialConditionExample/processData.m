@@ -3,25 +3,27 @@ clear all
 close all
 
 % Load
-load('data')
+load('data_10p0')
 colorMatrix = [0 0 0; 228 26 28; 55 126 184; 77 175 74]./255;
 
 
 
 % Loop through num iter to see if there are outliers
 NUM_ITER_FILTER = NUM_ITER;
-for i = 1:NSample
-    for j = 1:NSample
-        if NUM_ITER(i,j) > 10000
-            NUM_ITER_FILTER(i,j) = 10000;
-        end
-    end
-end
+% for i = 1:NSample
+%     for j = 1:NSample
+%         if NUM_ITER(i,j) > 10000
+%             NUM_ITER_FILTER(i,j) = 10000;
+%         end
+%     end
+% end
 
 
 % Plot the surf plot
 figure
-h1 = surf(BETA,YY,NUM_ITER_FILTER);
+figSize = [0 0 0.25 0.3]*.75;
+set(gcf,'units','normalized','position',figSize)
+h1 = surf(BETA,YY,NUM_ITER_FILTER');
 set(gca,'zscale','log')
 ZLIM = zlim(gca); % query zlim 
 xlim([xmin(1), xmax(1)])
@@ -51,12 +53,15 @@ plot(P,OPT);
 xlabel('$\beta$','interpreter','latex','fontsize',15)
 ylabel('$y$','interpreter','latex','fontsize',15)
 zlabel('Number of iterations','interpreter','latex','fontsize',15)
-legend('Number of iterations','$\Gamma_N$','','','$O_\infty$','interpreter','latex','fontsize',12,'location','northeast')
+% legend('Number of iterations','$\Gamma_N$','','','$O_\infty$','interpreter','latex','fontsize',12,'location','northeast')
 hf = gcf;
 lines = hf.CurrentAxes.Children;                                    % Get °line' Objects From Structure
-legend([lines(end) lines(end-1) lines(3)],'Number of iterations','$\Gamma_N$','$O_\infty$',...
-    'Location','best','interpreter','latex','fontsize',12)    % Create 'legend' Object
-
+% legend([lines(end-1) lines(3)],'$\Gamma_N$','$O_\infty$',...
+%     'Location','best','interpreter','latex','fontsize',12)    % Create 'legend' Object
+load('cam')
+campos(cam)
+% title('$\epsilon = 0.1$','interpreter','latex','fontsize',19)
+title('$\epsilon = 10$','interpreter','latex','fontsize',19)
 
 
 % % Plot the initial conditions for which feasibile solutions were found on

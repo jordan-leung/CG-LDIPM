@@ -190,7 +190,7 @@ LDIPM_opts.mu_weight = 1;
 LDIPM_opts.mu_bound = [1e-10, 1e-2];
 LDIPM_opts.maxIter = 1000;
 LDIPM_opts.printFlag = 0;
-LDIPM_opts.FNormLimit = 10; % bound on the neighborhood
+LDIPM_opts.FNormLimit = 1; % bound on the neighborhood
 controlArgs.LDIPM_opts = LDIPM_opts;
 
 %% Running simple experiments
@@ -229,15 +229,15 @@ for i = 1:NSample
         if feasFlag
             f_QP = (W_MPC*theta_i);
             b_QP = b_MPC - L_MPC*theta_i;
-            [~,output] = logInteriorPoint_conjgrad_INB_edit(H_QP,f_QP,A_QP,b_QP,v0,LDIPM_opts);
-            NUM_ITER(i,j) = sum(output.CGIters);
+            [~,output] = logInteriorPoint_conjgrad(H_QP,f_QP,A_QP,b_QP,v0,LDIPM_opts);
+            NUM_ITER(i,j) = sum(sum(output.CGIters));
         else
             NUM_ITER(i,j) = NaN;
         end
     end
 end
 
-save('data_10p0')
+save('data_cg')
 
 
 

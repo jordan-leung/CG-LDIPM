@@ -182,7 +182,12 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
     FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
     FNorm = norm(F,'inf');
     muPrev = mu;
-    while FPlus > (1 - tConst*(1-eta_k))*FNorm
+    
+    % Track how many backtrack searches we do. If we're doing a tonne, then
+    % relax the tolerance
+    toltol = 0;
+    numBack = 1;
+    while FPlus > (1 - tConst*(1-eta_k))*FNorm + toltol*FNorm
         dx_k = theta*dx_k;
         dv_k = theta*dv_k;
         eta_k = 1-theta*(1-eta_k);
@@ -193,6 +198,11 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
         %             mu = muStar;
         %             break
         %         end
+        
+        if numBack > 100
+            toltol  = 1e-4;
+        end
+        numBack = numBack+1;
     end
     x = x + dx_k;
     v = v + dv_k;
@@ -221,8 +231,8 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
             mu = muStar;
         end
     end
-    FVec(numIter) = FNorm;
-    feasVec(numIter) = ~notFeasible;
+    FVec(numIter+1) = FNorm;
+    feasVec(numIter+1) = ~notFeasible;
     
     % Store
     muVec(numIter+1) = mu;
