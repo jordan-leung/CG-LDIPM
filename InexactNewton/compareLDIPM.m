@@ -4,7 +4,7 @@ close all
 
 % Load data
 saveFlag = 0;
-caseFlag = 1;
+caseFlag = 5;
 switch caseFlag
     case 1 % Active constraints MPC example
         load('QPData'); 
@@ -20,7 +20,7 @@ switch caseFlag
         b = b_QP;
     case 3 % Case 1 but with only the input constraints
         load('QPData');
-        H = H_QP;CG
+        H = H_QP;
         c = f_QP;
         xmin = -ones(size(H_QP,1),1);
         xmax = ones(size(H_QP,1),1);
@@ -39,7 +39,7 @@ invH = inv(H);
 % LDIPM settings
 mu_f = 1e-7;
 mu_0 = 1e8;
-maxIter = 50000;
+maxIter = 20000;
 maxCGIter = 100000;
 CGTol = 1e-8;
 v0 = zeros(size(A,1),1);
@@ -70,7 +70,7 @@ fprintf('------ Running with CG LDIPM (longstep)  ------ \n')
 % [x3,output3] = logInteriorPoint_conjgrad_INB(H,c,A,b,v0,opts);
 
 fprintf('------ Running with CGLDIPM-GIN  ------ \n')
-opts.FNormLimit = 5;
+opts.FNormLimit = 10;
 [x1,output1] = logInteriorPoint_conjgrad_INB_edit(H,c,A,b,v0,opts);
 
 fprintf('------ Running with CGLDIPM-GIN  ------ \n')
@@ -119,12 +119,36 @@ semilogy(totalIter2,output2.muVec,'.','Markersize',15,'Color',h3.Color)
 semilogy(totalIter3,output3.muVec,'.','Markersize',15,'Color',h4.Color)
 semilogy(totalIter_cg(end),output_cg.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h1.Color)
 semilogy(totalIter1(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
-semilogy(totalIter2(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
-semilogy(totalIter3(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+semilogy(totalIter2(end),output2.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+semilogy(totalIter3(end),output3.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
 grid on; box on;
 hold off
 legend([h1 h2 h3 h4],'Longstep w/ CG','Inexact Newton, $\epsilon = 10$',...
     'Inexact Newton, $\epsilon = 1$','Inexact Newton, $\epsilon = 0.5$',...
+    'interpreter','latex','fontsize',12,'location','northeast')
+xlabel('CG Iterations','interpreter','latex','fontsize',15)
+ylabel('$\mu$','interpreter','latex','fontsize',15)
+if saveFigFlag
+    filename = strcat('./Figures/','preliminaryPlot');
+    saveas(gcf,filename,'epsc'); 
+end
+
+% Mu vs. CG iterations 
+figure
+set(gcf,'units','normalized','position',figSize)
+h2 = semilogy(totalIter1,output1.muVec);
+hold on
+h3 = semilogy(totalIter2,output2.muVec);
+h4 = semilogy(totalIter3,output3.muVec);
+semilogy(totalIter1,output1.muVec,'.','Markersize',15,'Color',h2.Color)
+semilogy(totalIter2,output2.muVec,'.','Markersize',15,'Color',h3.Color)
+semilogy(totalIter3,output3.muVec,'.','Markersize',15,'Color',h4.Color)
+semilogy(totalIter1(end),output1.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h2.Color)
+semilogy(totalIter2(end),output2.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h3.Color)
+semilogy(totalIter3(end),output3.muVec(end),'s','Markersize',15,'Linewidth',2,'Color',h4.Color)
+grid on; box on;
+hold off
+legend([h2 h3 h4],'Inexact Newton, $\epsilon = 10$','Inexact Newton, $\epsilon = 1$','Inexact Newton, $\epsilon = 0.5$',...
     'interpreter','latex','fontsize',12,'location','northeast')
 xlabel('CG Iterations','interpreter','latex','fontsize',15)
 ylabel('$\mu$','interpreter','latex','fontsize',15)

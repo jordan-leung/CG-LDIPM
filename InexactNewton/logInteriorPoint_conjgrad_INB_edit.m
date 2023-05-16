@@ -192,13 +192,6 @@ while (muPrev > mu_f && numIter < maxIter) || notFeasible
         dv_k = theta*dv_k;
         eta_k = 1-theta*(1-eta_k);
         FPlus = norm(F_eval(x+dx_k,v+dv_k,mu,const),'inf');
-        %         % Check if we can find a different mu that this is satisfied for
-        %         muStar = muStarSolve_FNorm(x+dx_k,v+dv_k,const,FNormLimit,mu_f);
-        %         if muStar < mu
-        %             mu = muStar;
-        %             break
-        %         end
-        
         if numBack > 100
             toltol  = 1e-4;
         end
