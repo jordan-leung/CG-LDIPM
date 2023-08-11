@@ -1,4 +1,4 @@
-function [x,output] = cgLDIPM(W,c,Aineq,bineq,v0,opts)
+function [x,output] = cgLDIPM_medStep(W,c,Aineq,bineq,v0,opts)
 % min 0.5*x'*W*x + c'*x   subject to:  A*x <= b
 
 % Get size variables
@@ -37,9 +37,9 @@ end
 Aineq = - Aineq;
 
 % Pack
-invW = inv(W);
+% invW = inv(W);
 const.W = W;
-const.invW = invW;
+% const.invW = invW;
 const.c = c;
 const.A = Aineq;
 const.b = bineq;
@@ -52,27 +52,30 @@ x = zeros(n,1);
 mu = mu_0;
 kappa  =  opts.kappa;
 N = opts.N;
+const.gamma = opts.gamma;
+const.minEig = min(eig(W));
 
 % Store CG output feedback
-maxIter = ceil(N*log(mu_0/mu_f)*sqrt(m)/(2*qInv(opts.zeta^2))); % just for initialization
+maxIter = ceil(1*log(mu_0/mu_f)*sqrt(m)/(2*qInv(opts.zeta^2))); % just for initialization
 CGIters = zeros(maxIter,1);
 CGres = zeros(maxIter,1);
 muVec = zeros(maxIter,1);
 count = 0;
-dNorm = 2;
-while mu > mu_f && dNorm > 1
-   if mu > mu_f
-       mu  = (1/kappa)*mu;
+while mu > mu_f
+   mu  = (1/kappa)*mu;
+   if mu < mu_f
+       mu = mu_f;
    end
-   for i = 1:N
-       [x,d,cgIters_i,res_i] =  solveNewtonStep(mu,v,const,maxIter,CGTol,x);
+   dNorm = 10;
+   while dNorm > 1
+       [x,d,cgIters_i,res_i,] =  solveNewtonStep(mu,v,const,maxIter,CGTol,x);
        v = v + d;
        count = count + 1;
        CGIters(count) = cgIters_i;
        CGres(count)  = res_i;
        muVec(count) = mu;
+       dNorm = norm(d,'inf');
    end
-   dNorm = norm(d,'inf');
 end
 
 % Set output
@@ -137,6 +140,9 @@ while numIter  < maxIter && res > tol
     % i++
     numIter = numIter + 1;
 end
-d = 1 - 1/sqrt(mu)*exp(v).*(A*x + b);
+d = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*x + b);
 end
+
+
+
 

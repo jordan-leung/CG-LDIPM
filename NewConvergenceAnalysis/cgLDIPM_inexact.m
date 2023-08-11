@@ -65,8 +65,11 @@ minInd = zeros(maxIter,1);
 condVec = zeros(maxIter,2);
 sigma = zeros(maxIter,1);
 count = 0;
-while mu > mu_f 
-   mu  = (1/kappa)*mu;
+dNorm = 2;
+while mu > mu_f && dNorm > 1
+   if mu > mu_f
+       mu  = (1/kappa)*mu;
+   end
    for i = 1:N
        [x,d,cgIters_i,res_i,minCond_i,minInd_i,condVec_i,sigma_i] =  solveNewtonStep(mu,v,const,maxIter,CGTol,x);
        v = v + d;
@@ -79,6 +82,7 @@ while mu > mu_f
        sigma(count) = sigma_i;
        condVec(count,:) = condVec_i'/sigma_i;
    end
+   dNorm = norm(d,'inf');
 end
 
 % Set output
@@ -104,6 +108,7 @@ c = const.c;
 A = const.A;
 b = const.b;
 m = size(A,1);
+n = size(A,2);
 gamma = const.gamma;
 minEig = const.minEig;
 
@@ -134,6 +139,8 @@ numIter = 1;
 
 % Iterate...
 truncCond = 0;
+
+
 while numIter  < maxIter && res > tol && truncCond ==  0
     zPrev = z;
     z = r;
@@ -152,8 +159,13 @@ while numIter  < maxIter && res > tol && truncCond ==  0
     numIter = numIter + 1;
 
     % Check truncation criteria
-    sigma = (2/(minEig*mu))*norm(W*x + c + mu*barrierGrad(x,A,b),2);
-    d = ones(m,1) - 1/sqrt(mu)*exp(v).*(A*x + b);
+    s_i = A*x + b;
+    val_i = 0;
+    for j = 1:m
+        val_i = val_i + A(j,:)'/s_i(j);
+    end
+    sigma = (2/(minEig*mu))*norm(W*x + c - mu*val_i,2);
+    d = ones(m,1) - 1/sqrt(mu)*exp(v).*s_i;
     dNorm = norm(d,2);
     cond1 = (1-gamma)*dNorm^2;
     if sigma*res < cond1
@@ -171,16 +183,16 @@ while numIter  < maxIter && res > tol && truncCond ==  0
 end
 end
 
-function val = barrierGrad(x,A,b)
-   m = size(A,1);
-   n = size(A,2);
-   val = zeros(n,1);
-   for i = 1:m
-       a_i = A(i,:)';
-       b_i = b(i);
-       val = val - a_i/(a_i'*x+b_i);
-   end
-end
+% function val = barrierGrad(x,A,b)
+%    m = size(A,1);
+%    n = size(A,2);
+%    val = zeros(n,1);
+%    for i = 1:m
+%        a_i = A(i,:)';
+%        b_i = b(i);
+%        val = val - a_i/(a_i'*x+b_i);
+%    end
+% end
 
 
 function val = hlb(dNorm,gamma)
