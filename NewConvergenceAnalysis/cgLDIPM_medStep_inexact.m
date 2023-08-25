@@ -52,7 +52,8 @@ x = zeros(n,1);
 mu = mu_0;
 kappa  =  opts.kappa;
 N = opts.N;
-const.gamma = opts.gamma;
+gamma = opts.gamma;
+const.gamma = gamma;
 const.minEig = min(eig(W));
 
 % Store CG output feedback
@@ -73,7 +74,8 @@ while mu > mu_f
     dNorm = 10;
    while dNorm > 1
        [x,d,cgIters_i,res_i,minCond_i,minInd_i,condVec_i,sigma_i] =  solveNewtonStep(mu,v,const,maxIter,CGTol,x);
-       v = v + d;
+       t = min([gamma, 1/(norm(d,'inf')^2)]);
+       v = v + t*d;
        count = count + 1;
        CGIters(count) = cgIters_i;
        CGres(count)  = res_i;
@@ -176,6 +178,14 @@ while numIter  < maxIter && res > tol && truncCond ==  0
     if (cond1 > 0 && sigma*res < cond1)
         truncCond = 1;
     end
+end
+if numIter == 1
+    cond1 = 1;
+    s_i = A*x+b;
+    sInv_i = 1./s_i;
+    barGrad_i = A'*sInv_i;
+    sigma = (2/(minEig*mu))*norm(W*x + c -  mu*barGrad_i,2);
+    d = ones(m,1) - 1/sqrt(mu)*expv.*s_i;
 end
 minCond = cond1; % just for historical reasons
 condVec = cond1;
