@@ -89,10 +89,11 @@ fprintf('------ Running longstep LDIPM  ------ \n')
 [xStar,outputStar] = cgLDIPM_longstep(H,c,A,b,v_c,opts);
 fprintf('------ Running exact medium step CG-LDIPM  ------ \n')
 [x1,output1] = cgLDIPM_medStep(H,c,A,b,v_c,opts);
-fprintf('------ Running inexact medium step CG-LDIPM  ------ \n')
-[x2,output2] = cgLDIPM_medStep_inexact(H,c,A,b,v_c,opts);
+% fprintf('------ Running inexact medium step CG-LDIPM  ------ \n')
+% [x2,output2] = cgLDIPM_medStep_inexact(H,c,A,b,v_c,opts);
 % fprintf('------ Running exact new step CG-LDIPM  ------ \n')
 % [x3,output3] = cgLDIPM_newStep(H,c,A,b,v_c,opts);
+
 
 norm(x1-xStar)
 norm(x2-xStar)
