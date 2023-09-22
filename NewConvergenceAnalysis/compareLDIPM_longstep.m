@@ -72,6 +72,7 @@ fprintf('------ Running inexact longstep CG-LDIPM  ------ \n')
 % fprintf('------ Running inexact longstep CG-LDIPM  ------ \n')
 % [x2,output2] = cgLDIPM_longstep_inexact(H,c,A,b,v_c,opts);
 
+err
 
 norm(x2-x1,'inf')
 norm(output2.v - output1.v,'inf')
