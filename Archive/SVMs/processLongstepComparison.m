@@ -11,9 +11,7 @@ clear all
 close all
 
 % Specify the folder where the files live.
-% myFolder = '/Users/jordan/Documents/GitHub/CG-LDIPM/MPC_Examples/Randomized/Data/FixedStep_low';
-% myFolder = '/Users/jordan/Documents/GitHub/CG-LDIPM/MPC_Examples/Randomized/Data/FixedStep_med';
-myFolder = '/Users/jordan/Documents/GitHub/CG-LDIPM/MPC_Examples/Randomized/Data/FixedStep_high';
+myFolder = '/Users/jordan/Documents/GitHub/CG-LDIPM/MPC_Examples/Randomized/Data/LongStep';
 % Check to make sure that folder actually exists.  Warn user if it doesn't.
 if ~isfolder(myFolder)
     errorMessage = sprintf('Error: The following folder does not exist:\n%s\nPlease specify a new folder.', myFolder);
@@ -62,7 +60,7 @@ end
 % indVec = indVec([2, 4, 6:end]);
 CG_ITER_MEAN = CG_ITER_MEAN(indVec,:);
 CG_ITER_STD = CG_ITER_STD(indVec,:);
-LDIPM_ITER_MEAN = LDIPM_ITER_MEAN(indVec,:);
+LDIPM_ITER_MEAN = 2*LDIPM_ITER_MEAN(indVec,:);
 LDIPM_ITER_STD = LDIPM_ITER_STD(indVec,:);
 INFEAS_NUM = INFEAS_NUM(indVec,:);
 SIZES = SIZES(indVec,:);

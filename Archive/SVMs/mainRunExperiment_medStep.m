@@ -13,8 +13,8 @@ set(groot,'defaultFigureCreateFcn',@(fig,~)addToolbarExplorationButtons(fig))
 % Set dimensions
 % targetProblemSize = 100;
 % n = 2*targetProblemSize/10
-n = 140;
-m = n/2;
+n = 100;
+m = 2*n;
 
 % Set number of trials to average over
 NSample = 1;
@@ -31,10 +31,10 @@ opts.N = 1;
 opts.kappa = (1/0.2);
 
 % Parameters that are constant between trials
-N = 10;
-R = 0.1*eye(m);
-nonzeros = round(.7*n);
 dTol = 1e-3;
+nonzeros = round(0.15*n);
+W = eye(n);
+c = 10*ones(n,1);
 
 % Storage containers
 CG_ITERS = zeros(NSample,2);
@@ -46,68 +46,59 @@ saveFlag = 0;
 
 for i = 1:NSample
     i
-    % (A,B) matrices
-    A = eye(n) + normrnd(zeros(n,n),0.01*ones(n,n));
-    A = 0.99*A/max(abs(eig(A)));
-    B = normrnd(zeros(n,m),1*ones(n,m));
-
-    % (Q,R) matrices
-    q = zeros(n,1);
-    q(1:nonzeros) = 10*rand(nonzeros,1);
-    q = q(randperm(n));
-    Q = diag(q);
-    [K,P] = dlqr(A,B,Q,R);
-
-    % Constraints
-    aa = 1*ones(n,1);
-    bb = 2*ones(n,1);
-    xBar =  aa + (bb-aa).*rand(n,1);
-    uBar = 0.1*rand(m,1);
-
-    % Initial Condition
-    aa = -0.5*xBar;
-    bb = 0.5*xBar;
-    x0 =  aa + (bb-aa).*rand(n,1);
-
-    % MPC and QPmatrices 
-    [W,F,Acon,L,b] = generateMatrices_forCGLDIPM(N,A,B,P,Q,R,xBar,uBar);
-    if i == 1
-        size(Acon)
+    % Define the vector b
+    b = [ones(m/2,1); -1*ones(m/2,1)];
+    A = zeros(m,n);
+    % Fill in 15% non-zero elements
+    for count = 1:m/2
+      a_i = normrnd(1/n*ones(n,1),1/n*ones(n,1));
+      a_i(nonzeros+1:end) = 0*a_i(nonzeros+1:end);
+      a_i = a_i(randperm(n));
+      A(count,:) = a_i';
     end
-    c = 2*F*x0;
-    bcon = b + L*x0;
-    v0 = zeros(size(Acon,1),1);
+    for count = m/2+1:m
+      a_i = normrnd(-1/n*ones(n,1),1/n*ones(n,1));
+      a_i(nonzeros+1:end) = 0*a_i(nonzeros+1:end);
+      a_i = a_i(randperm(n));
+      A(count,:) = a_i';
+    end
+    v0 = zeros(size(A,1),1);
 
-    % Get centered point 
-    [~,v_c,d,iters] = logInteriorPoint_getCenteredPoint(W,c,Acon,bcon,v0,opts.mu_0,100,dTol);
+    % Generate ACon and bCon
+    bcon = [b; -b.*(A*)]
+
+    % Get centered point
+    [~,v_c,d,iters] = logInteriorPoint_getCenteredPoint(W,c,A,b,v0,opts.mu_0,100,dTol);
     if iters == 100
         warning('Did not arrive at centered point')
-    end    
+    end
     % Run exact CG
-    [x1,output1] = cgLDIPM_longstep(W,c,Acon,bcon,v_c,opts);
+    [x1,output1] = cgLDIPM_medstep(W,c,A,b,v_c,opts);
     % Run inexact CG
-    [x2,output2] = cgLDIPM_longstep_inexact(W,c,Acon,bcon,v_c,opts);
+    [x2,output2] = cgLDIPM_medstep_inexact(W,c,A,b,v_c,opts);
 
     % Process and store
     CG_ITERS(i,:) = [sum(sum(output1.CGIters)) sum(sum(output2.CGIters))];
     LDIPM_ITERS(i,:) = [output1.numIter output2.numIter];
     FEASFLAG(i) = output2.feasFlag;
 
-%         % Save the first data set for a closer look
-%         if i == 1  && saveFlag
-%             saveStr = ['./Data/fixedstepSample_n',num2str(n),'_m',num2str(m),'_cond',num2str(condNum)];
-%             sampleData.H = H;
-%             sampleData.c = c;
-%             sampleData.A = A;
-%             sampleData.b = b;
-%             sampleData.v_init = v_init;
-%             sampleData.opts = opts;
-%             sampleData.output1 = output1;
-%             sampleData.output2 = output2;
-%             save(saveStr,'sampleData');
-%         end
+    %         % Save the first data set for a closer look
+    %         if i == 1  && saveFlag
+    %             saveStr = ['./Data/fixedstepSample_n',num2str(n),'_m',num2str(m),'_cond',num2str(condNum)];
+    %             sampleData.H = H;
+    %             sampleData.c = c;
+    %             sampleData.A = A;
+    %             sampleData.b = b;
+    %             sampleData.v_init = v_init;
+    %             sampleData.opts = opts;
+    %             sampleData.output1 = output1;
+    %             sampleData.output2 = output2;
+    %             save(saveStr,'sampleData');
+    %         end
 
 end
+
+x_qp = quadprog(W,c,A,b);
 
 iLast = NSample;
 % iLast = i-1;
@@ -118,20 +109,20 @@ if saveFlag
     saveData.AVG_ITERS = CG_ITERS(1:iLast,:)./LDIPM_ITERS(1:iLast,:);
     saveData.n = n;
     saveData.m = m;
-    saveData.n_qp = size(Acon,2);
-    saveData.m_qp = size(Acon,1);
+    saveData.n_qp = size(A,2);
+    saveData.m_qp = size(A,1);
     saveData.FEASFLAG = FEASFLAG(1:iLast);
     saveData.NSample = iLast;
-    saveStr = ['./Data/LongStep/longstepData_n',num2str(n)];
+    saveStr = ['./Data/FixedStep/fixedstepData_n',num2str(n)];
     save(saveStr,'saveData');
 else
     % Post-process to get plot of mu (y-axis) vs. total cg iterations
     CGIters = output1.CGIters; % for base
-    totalIters = sum(sum(CGIters));
+    totalIters = sum((CGIters));
     muVecTotal1 = zeros(totalIters,1);
     count = 1;
     for i = 1:size(CGIters,1)
-        for j = 1:(CGIters(i,1)+CGIters(i,2))
+        for j = 1:CGIters(i,1)
             muVecTotal1(count) = output1.muVec(i);
             count = count + 1;
         end
@@ -139,16 +130,15 @@ else
     CGIters1 = CGIters;
 
     CGIters = output2.CGIters; % for inexact
-    totalIters = sum(sum(CGIters)); % gives 1 x 2 vector of summed columns
+    totalIters = sum((CGIters)); % gives 1 x 2 vector of summed columns
     muVecTotal2 = zeros(totalIters,1);
     count = 1;
     for i = 1:size(CGIters,1)
-        for j = 1:(CGIters(i,1)+CGIters(i,2))
+        for j = 1:CGIters(i,1)
             muVecTotal2(count) = output2.muVec(i);
             count = count + 1;
         end
     end
-
 
     %% Plotting
     close all
@@ -168,7 +158,7 @@ else
     subtightplot(3,1,1,subPlotGap,subPlotH,subPlotW)
     h1 = semilogy(muVecTotal1,'color',colorMatrix(1,:));
     box on; grid on; hold on
-    semilogy(length(muVecTotal1),muVecTotal1(end),'.' ,'color',colorMatrix(1,:),'markersize',18);
+    semilogy(length(muVecTotal1),muVecTotal1(end),'.','color',colorMatrix(1,:),'markersize',18);
     h2 = semilogy(muVecTotal2,'color',colorMatrix(2,:),'linestyle','-.');
     semilogy(length(muVecTotal2),muVecTotal2(end),'.' ,'color',colorMatrix(2,:),'markersize',18);
     xlabel('Cumulative CG Iterations','interpreter','Latex','FontSize',labelsize)
@@ -178,28 +168,25 @@ else
     xlim([1 Inf])
 
     subtightplot(3,1,2,subPlotGap,subPlotH,subPlotW)
-    semilogy(output1.CGIters(:,1)+output1.CGIters(:,2),'color',colorMatrix(1,:));
+    semilogy(output1.CGIters(:,1),'color',colorMatrix(1,:));
     box on; grid on; hold on
-    semilogy(output2.CGIters(:,1)+output2.CGIters(:,2),'color',colorMatrix(2,:),'linestyle','-.');
+    semilogy(output2.CGIters(:,1),'color',colorMatrix(2,:),'linestyle','-.');
     legend('Nominal','Inexact','interpreter','Latex','FontSize',legendsize,'location','southeast')
     xlabel('$\mu$','interpreter','Latex','FontSize',labelsize)
     ylabel('CG Iterations','interpreter','Latex','FontSize',labelsize)
     xlim([1 Inf])
     yticks([1e0 1e2 1e4])
 
+
     subtightplot(3,1,3,subPlotGap,subPlotH,subPlotW)
     semilogy(ones(output1.numIter,1)*opts.CGTol,'-','color',colorMatrix(1,:));
     box on; grid on; hold on
-    semilogy(output2.CGres(:,2),'color',colorMatrix(2,:),'linestyle',':');
-    semilogy(output2.CGres(:,1),'color',colorMatrix(2,:),'linestyle','-.');
-    legend('Nominal','Inexact (1)','Inexact (2)','interpreter','Latex','FontSize',legendsize,'location','southwest','orientation','horizontal')
+    semilogy(output2.resLim(:,1),'color',colorMatrix(2,:),'linestyle','-.');
+    legend('Nominal','Inexact','interpreter','Latex','FontSize',legendsize)
     xlabel('LDIPM Iteration','interpreter','Latex','FontSize',labelsize)
     ylabel('Required Residual','interpreter','Latex','FontSize',labelsize)
     xlim([1 Inf])
     ylim([0.25e-6 Inf])
     yticks([1e-6 1e-3 1e0 1e3])
 end
-
-
-
 
